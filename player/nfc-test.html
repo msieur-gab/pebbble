@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #1a1a1a; color: #fff; }
+        button { padding: 20px 40px; font-size: 18px; background: #FF4D00; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+        button:disabled { background: #666; }
+        #log { margin-top: 20px; padding: 10px; background: #000; color: #0f0; font-family: monospace; font-size: 12px; height: 300px; overflow-y: auto; border: 1px solid #0f0; }
+    </style>
+</head>
+<body>
+    <h1>NFC Test Page</h1>
+    <p>No service worker, no Shadow DOM, no modules.</p>
+    <button id="scan">Scan NFC Tag</button>
+    <div id="log"></div>
+
+    <script>
+        function log(msg) {
+            var d = document.getElementById('log');
+            d.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '<br>';
+            d.scrollTop = d.scrollHeight;
+            console.log(msg);
+        }
+
+        log('Page loaded');
+        log('NDEFReader supported: ' + ('NDEFReader' in window));
+
+        document.getElementById('scan').addEventListener('click', async function() {
+            log('Button clicked');
+            this.textContent = 'Starting...';
+            this.disabled = true;
+
+            try {
+                log('Creating NDEFReader...');
+                var ndef = new NDEFReader();
+
+                log('Calling scan()...');
+                await ndef.scan();
+                log('scan() resolved! NFC is active.');
+
+                this.textContent = 'Scanning... Tap tag';
+                this.style.background = '#22c55e';
+
+                ndef.addEventListener('reading', function(event) {
+                    log('=== TAG READ ===');
+                    log('Serial: ' + event.serialNumber);
+                    log('Records: ' + event.message.records.length);
+                    for (var i = 0; i < event.message.records.length; i++) {
+                        var r = event.message.records[i];
+                        log('  Record ' + i + ': type=' + r.recordType);
+                        if (r.recordType === 'url' || r.recordType === 'text') {
+                            var decoder = new TextDecoder();
+                            log('  Data: ' + decoder.decode(r.data));
+                        }
+                    }
+                });
+
+                ndef.addEventListener('readingerror', function() {
+                    log('Read error - try another tag');
+                });
+
+            } catch (e) {
+                log('ERROR: ' + e.name + ' - ' + e.message);
+                this.textContent = 'Error - Retry';
+                this.style.background = '#ef4444';
+                this.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

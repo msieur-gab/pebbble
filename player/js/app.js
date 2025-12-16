@@ -32,8 +32,9 @@ async function init() {
     console.log('🪨 Pebbble Player initializing...');
 
     try {
-        // 1. Register service worker for PWA
-        await registerServiceWorker();
+        // 1. Service worker disabled during development
+        // await registerServiceWorker();
+        console.log('⚠️ Service Worker disabled for development');
 
         // 2. Initialize i18n (auto-detects language)
         await i18n.init();
