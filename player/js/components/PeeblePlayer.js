@@ -49,8 +49,9 @@ class PeeblePlayer extends HTMLElement {
     }
 
     /**
-     * Check for URL parameters to bypass NFC (for testing)
-     * Usage: http://localhost:8000/#playlistHash=Qm...&serial=04:2D:B7:1A:E7:1C:90
+     * Check for URL parameters
+     * - Debug mode: #playlistHash=Qm...&serial=04:2D:B7:1A:E7:1C:90
+     * - NFC launch: #playlistHash=Qm... (need to scan for serial)
      */
     checkUrlParams() {
         const hash = window.location.hash.slice(1);
@@ -61,15 +62,25 @@ class PeeblePlayer extends HTMLElement {
         const serial = params.get('serial');
 
         if (playlistHash && serial) {
+            // Debug mode: both params provided
             console.log('🧪 Debug mode: Using URL parameters');
             console.log(`   Playlist: ${playlistHash}`);
             console.log(`   Serial: ${serial}`);
 
-            // Simulate NFC read
             this.handleNfcRead({
                 serial,
                 url: `https://play.pebbble.app/#playlistHash=${playlistHash}`
             });
+        } else if (playlistHash) {
+            // App launched via NFC tag - we have the hash but need to scan for serial
+            console.log('📱 Launched via NFC URL, need to scan for serial');
+            console.log(`   Playlist: ${playlistHash}`);
+
+            // Store the playlistHash for later use when we get the serial
+            this.pendingPlaylistHash = playlistHash;
+
+            // Emit event so NfcPrompt knows we're in "rescan" mode
+            eventBus.emit(Events.NFC_RESCAN_NEEDED, { playlistHash });
         }
     }
 
@@ -142,17 +153,24 @@ class PeeblePlayer extends HTMLElement {
     async handleNfcRead(data) {
         const { serial, url } = data;
 
-        if (!serial || !url) {
+        if (!serial) {
             this.showError(t('nfc.error'));
             return;
         }
 
-        // Parse playlist hash from URL
-        const playlistHash = nfc.parsePlaylistHash(url);
+        // Use pending playlistHash from URL if available, otherwise parse from NFC URL
+        let playlistHash = this.pendingPlaylistHash;
+        if (!playlistHash && url) {
+            playlistHash = nfc.parsePlaylistHash(url);
+        }
+
         if (!playlistHash) {
             this.showError(t('errors.decryptionFailed'));
             return;
         }
+
+        // Clear pending hash
+        this.pendingPlaylistHash = null;
 
         // Store NFC data
         this.updateState({

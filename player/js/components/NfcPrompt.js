@@ -12,11 +12,17 @@ class NfcPrompt extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.isScanning = false;
+        this.hasPlaylistHash = false; // True when app was launched via NFC URL
+        this.unsubscribers = [];
     }
 
     connectedCallback() {
         this.render();
         this.setupEventListeners();
+    }
+
+    disconnectedCallback() {
+        this.unsubscribers.forEach(unsub => unsub());
     }
 
     setupEventListeners() {
@@ -26,15 +32,30 @@ class NfcPrompt extends HTMLElement {
         }
 
         // Listen for NFC events
-        eventBus.on(Events.NFC_ACTIVATED, () => {
-            this.isScanning = true;
-            this.render();
-        });
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_ACTIVATED, () => {
+                this.isScanning = true;
+                this.render();
+            })
+        );
 
-        eventBus.on(Events.NFC_ERROR, (data) => {
-            this.isScanning = false;
-            this.showError(data.message);
-        });
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_ERROR, (data) => {
+                this.isScanning = false;
+                this.showError(data.message);
+            })
+        );
+
+        // Listen for rescan needed (app launched via NFC URL)
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_RESCAN_NEEDED, () => {
+                console.log('📱 NfcPrompt: Rescan mode activated');
+                this.hasPlaylistHash = true;
+                this.render();
+                // Auto-start NFC scanning
+                this.activateNfc();
+            })
+        );
     }
 
     async activateNfc() {
@@ -219,14 +240,14 @@ class NfcPrompt extends HTMLElement {
                 </div>
 
                 ${this.isScanning ? `
-                    <h2>${t('nfc.scanning')}</h2>
-                    <p class="subtitle">Hold your Pebbble close to your device</p>
+                    <h2>${this.hasPlaylistHash ? t('welcome.title') : t('nfc.scanning')}</h2>
+                    <p class="subtitle">${this.hasPlaylistHash ? 'Scan your stone again to unlock' : 'Hold your Pebbble close to your device'}</p>
                 ` : `
-                    <h2>Ready to Listen</h2>
-                    <p class="subtitle">Activate NFC to scan your magic stone</p>
+                    <h2>${this.hasPlaylistHash ? t('welcome.title') : 'Ready to Listen'}</h2>
+                    <p class="subtitle">${this.hasPlaylistHash ? 'Scan your stone to unlock your messages' : 'Activate NFC to scan your magic stone'}</p>
                     <button id="activate-btn">
                         <span>📡</span>
-                        ${t('nfc.activate')}
+                        ${this.hasPlaylistHash ? 'Scan to Unlock' : t('nfc.activate')}
                     </button>
                 `}
 
