@@ -4,7 +4,6 @@
  */
 
 import { eventBus, Events } from '../services/EventBus.js';
-import { nfc } from '../services/NFCService.js';
 import { t } from '../services/I18nService.js';
 
 class NfcPrompt extends HTMLElement {
@@ -34,44 +33,26 @@ class NfcPrompt extends HTMLElement {
         eventBus.on(Events.NFC_ERROR, (data) => {
             this.isScanning = false;
             this.showError(data.message);
+            // Reset button state
+            const btn = this.shadowRoot.getElementById('activate-btn');
+            if (btn) {
+                btn.textContent = 'Error - Try Again';
+                btn.disabled = false;
+            }
         });
     }
 
-    async activateNfc() {
+    activateNfc() {
         const btn = this.shadowRoot.getElementById('activate-btn');
-
-        // Listen for debug events from NFCService
-        const debugHandler = (e) => {
-            if (btn) btn.textContent = e.detail;
-        };
-        window.addEventListener('nfc-debug', debugHandler);
 
         if (btn) {
             btn.textContent = 'Starting...';
             btn.disabled = true;
         }
 
-        // Check if NFC is supported
-        if (!nfc.isSupported()) {
-            this.showError(t('nfc.notSupported'));
-            if (btn) btn.textContent = 'NFC Not Supported';
-            window.removeEventListener('nfc-debug', debugHandler);
-            return;
-        }
-
-        try {
-            await nfc.startReader();
-            window.removeEventListener('nfc-debug', debugHandler);
-            this.isScanning = true;
-            this.render();
-        } catch (error) {
-            window.removeEventListener('nfc-debug', debugHandler);
-            this.showError(error.message);
-            if (btn) {
-                btn.textContent = 'Error - Try Again';
-                btn.disabled = false;
-            }
-        }
+        // Emit request - let PebbblePlayer handle the actual NFC call
+        // This avoids nested Shadow DOM issues with user activation
+        eventBus.emit(Events.NFC_ACTIVATE_REQUEST);
     }
 
     showError(message) {

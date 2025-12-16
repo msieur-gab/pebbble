@@ -84,6 +84,7 @@ export const eventBus = new EventBus();
 // Event name constants for type safety
 export const Events = {
     // NFC events
+    NFC_ACTIVATE_REQUEST: 'nfc:activateRequest',
     NFC_ACTIVATED: 'nfc:activated',
     NFC_TAG_READ: 'nfc:tagRead',
     NFC_ERROR: 'nfc:error',
