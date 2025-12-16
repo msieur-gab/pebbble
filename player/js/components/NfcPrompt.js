@@ -38,23 +38,30 @@ class NfcPrompt extends HTMLElement {
     }
 
     async activateNfc() {
-        console.log('🔘 Activate NFC button clicked');
+        // Visual debug - change button text to confirm click works
+        const btn = this.shadowRoot.getElementById('activate-btn');
+        if (btn) {
+            btn.textContent = 'Starting NFC...';
+            btn.disabled = true;
+        }
 
         // Check if NFC is supported
         if (!nfc.isSupported()) {
-            console.log('❌ NFC not supported');
             this.showError(t('nfc.notSupported'));
+            if (btn) btn.textContent = 'NFC Not Supported';
             return;
         }
 
         try {
-            console.log('📡 Starting NFC reader...');
             await nfc.startReader();
             this.isScanning = true;
             this.render();
         } catch (error) {
-            console.error('❌ NFC error:', error);
             this.showError(error.message);
+            if (btn) {
+                btn.textContent = 'Error - Try Again';
+                btn.disabled = false;
+            }
         }
     }
 
