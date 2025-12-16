@@ -89,28 +89,6 @@ class PebbblePlayer extends HTMLElement {
     setupEventListeners() {
         // NFC events
         this.unsubscribers.push(
-            eventBus.on(Events.NFC_ACTIVATE_REQUEST, async () => {
-                // Handle NFC activation from NfcPrompt
-                // This is done here to avoid nested Shadow DOM user activation issues
-                if (!nfc.isSupported()) {
-                    eventBus.emit(Events.NFC_ERROR, {
-                        message: 'NFC is not supported on this device'
-                    });
-                    return;
-                }
-
-                try {
-                    await nfc.startReader();
-                    // NFC_ACTIVATED will be emitted by NFCService on success
-                } catch (error) {
-                    eventBus.emit(Events.NFC_ERROR, {
-                        message: error.message
-                    });
-                }
-            })
-        );
-
-        this.unsubscribers.push(
             eventBus.on(Events.NFC_ACTIVATED, () => {
                 this.updateState({ screen: Screen.NFC_PROMPT });
                 this.render();

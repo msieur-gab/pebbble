@@ -8,6 +8,7 @@ import { i18n } from './services/I18nService.js';
 import { storage } from './services/StorageService.js';
 import { audio } from './services/AudioService.js';
 import { eventBus, Events } from './services/EventBus.js';
+import { nfc } from './services/NFCService.js';
 
 // Components
 import './components/PebbblePlayer.js';
@@ -113,6 +114,27 @@ document.body.addEventListener('touchmove', (e) => {
         e.preventDefault();
     }
 }, { passive: false });
+
+// Handle NFC activation requests from NfcPrompt
+// This MUST be at app level (outside Shadow DOM) for user activation to work
+eventBus.on(Events.NFC_ACTIVATE_REQUEST, async () => {
+    console.log('📡 NFC activation requested');
+
+    if (!nfc.isSupported()) {
+        eventBus.emit(Events.NFC_ERROR, {
+            message: 'NFC is not supported on this device'
+        });
+        return;
+    }
+
+    try {
+        await nfc.startReader();
+    } catch (error) {
+        eventBus.emit(Events.NFC_ERROR, {
+            message: error.message
+        });
+    }
+});
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
