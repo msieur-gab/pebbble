@@ -311,7 +311,7 @@ class PebbblePlayer extends HTMLElement {
 
         // Load into audio service and auto-play
         const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
-        audio.loadPlaylist(availableTracks);
+        await audio.loadPlaylist(availableTracks);
 
         this.updateState({ playlist: tracks });
         this.render();
@@ -394,7 +394,7 @@ class PebbblePlayer extends HTMLElement {
 
                 // Update playlist progressively
                 const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
-                audio.loadPlaylist(availableTracks);
+                await audio.loadPlaylist(availableTracks);
 
                 this.updateState({ playlist: [...tracks] });
                 this.render();

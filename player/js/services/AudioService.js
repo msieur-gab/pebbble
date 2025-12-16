@@ -91,13 +91,14 @@ class AudioService {
     /**
      * Load a playlist of tracks
      * @param {Array} tracks - Array of { id, title, audioUrl, duration, ... }
+     * @returns {Promise} Resolves when first track is ready
      */
-    loadPlaylist(tracks) {
+    async loadPlaylist(tracks) {
         this.playlist = tracks;
         this.currentIndex = 0;
 
         if (tracks.length > 0) {
-            this.loadTrack(0);
+            await this.loadTrack(0);
         }
 
         eventBus.emit(Events.PLAYLIST_LOADED, {
@@ -109,22 +110,32 @@ class AudioService {
     /**
      * Load a specific track by index
      * @param {number} index
+     * @returns {Promise} Resolves when audio is ready to play
      */
     loadTrack(index) {
-        if (index < 0 || index >= this.playlist.length) return;
+        if (index < 0 || index >= this.playlist.length) return Promise.resolve();
 
         const track = this.playlist[index];
         this.currentIndex = index;
 
-        this.audio.src = track.audioUrl;
-        this.audio.load();
+        return new Promise((resolve) => {
+            // Wait for audio to be ready
+            const onCanPlay = () => {
+                this.audio.removeEventListener('canplay', onCanPlay);
+                resolve();
+            };
+            this.audio.addEventListener('canplay', onCanPlay);
 
-        this.updateMediaSession(track);
+            this.audio.src = track.audioUrl;
+            this.audio.load();
 
-        eventBus.emit(Events.TRACK_CHANGE, {
-            track,
-            index,
-            total: this.playlist.length
+            this.updateMediaSession(track);
+
+            eventBus.emit(Events.TRACK_CHANGE, {
+                track,
+                index,
+                total: this.playlist.length
+            });
         });
     }
 
@@ -188,7 +199,7 @@ class AudioService {
     /**
      * Go to next track
      */
-    next() {
+    async next() {
         let nextIndex = this.currentIndex + 1;
 
         if (nextIndex >= this.playlist.length) {
@@ -202,14 +213,14 @@ class AudioService {
             }
         }
 
-        this.loadTrack(nextIndex);
+        await this.loadTrack(nextIndex);
         this.play();
     }
 
     /**
      * Go to previous track
      */
-    previous() {
+    async previous() {
         // If more than 3 seconds in, restart current track
         if (this.audio.currentTime > 3) {
             this.seek(0);
@@ -226,7 +237,7 @@ class AudioService {
             }
         }
 
-        this.loadTrack(prevIndex);
+        await this.loadTrack(prevIndex);
         this.play();
     }
 
@@ -234,8 +245,8 @@ class AudioService {
      * Play specific track by index
      * @param {number} index
      */
-    playTrack(index) {
-        this.loadTrack(index);
+    async playTrack(index) {
+        await this.loadTrack(index);
         this.play();
     }
 
