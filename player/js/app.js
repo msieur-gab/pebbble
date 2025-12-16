@@ -115,25 +115,28 @@ document.body.addEventListener('touchmove', (e) => {
     }
 }, { passive: false });
 
-// Handle NFC activation requests from NfcPrompt
-// This MUST be at app level (outside Shadow DOM) for user activation to work
-eventBus.on(Events.NFC_ACTIVATE_REQUEST, async () => {
-    console.log('📡 NFC activation requested');
+// Listen for NFC tag scanned from global button (index.html)
+window.addEventListener('nfc-tag-scanned', (e) => {
+    console.log('📡 NFC tag scanned via global button', e.detail);
+    if (window.debugLog) window.debugLog('App received nfc-tag-scanned event');
 
-    if (!nfc.isSupported()) {
-        eventBus.emit(Events.NFC_ERROR, {
-            message: 'NFC is not supported on this device'
-        });
-        return;
-    }
+    // Hide the global button
+    if (window.hideGlobalNfcBtn) window.hideGlobalNfcBtn();
 
-    try {
-        await nfc.startReader();
-    } catch (error) {
-        eventBus.emit(Events.NFC_ERROR, {
-            message: error.message
-        });
-    }
+    // Format serial and emit to app
+    const serial = e.detail.serial;
+    const url = e.detail.url;
+
+    eventBus.emit(Events.NFC_TAG_READ, {
+        serial: serial ? serial.toUpperCase() : null,
+        url: url,
+        raw: e.detail
+    });
+});
+
+// Show global NFC button when NFC prompt is displayed
+eventBus.on(Events.NFC_ACTIVATE_REQUEST, () => {
+    if (window.showGlobalNfcBtn) window.showGlobalNfcBtn();
 });
 
 // Initialize when DOM is ready

@@ -16,6 +16,13 @@ class NfcPrompt extends HTMLElement {
     connectedCallback() {
         this.render();
         this.setupEventListeners();
+        // Show global NFC button (outside Shadow DOM for user activation)
+        if (window.showGlobalNfcBtn) window.showGlobalNfcBtn();
+    }
+
+    disconnectedCallback() {
+        // Hide global NFC button when this component is removed
+        if (window.hideGlobalNfcBtn) window.hideGlobalNfcBtn();
     }
 
     setupEventListeners() {
