@@ -28,10 +28,7 @@
     </div>
     <button id="show-debug" onclick="document.getElementById('debug-panel').style.transform='translateY(0)'" style="position:fixed;bottom:10px;right:10px;background:#222;color:#0f0;border:1px solid #0f0;padding:6px 10px;border-radius:4px;z-index:9998;font-size:11px;cursor:pointer;">Debug</button>
 
-    <!-- NFC Button (OUTSIDE Shadow DOM - required for user activation) -->
-    <button id="global-nfc-btn" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#FF4D00;color:#fff;border:none;padding:16px 32px;border-radius:50px;font-size:18px;font-weight:600;z-index:1000;box-shadow:0 4px 20px rgba(255,77,0,0.4);cursor:pointer;">
-        📡 Activate NFC
-    </button>
+    <!-- Global NFC Button removed - now using Shadow DOM component directly -->
 
     <main id="app">
         <!-- App components will be mounted here -->
@@ -41,9 +38,8 @@
     <!-- Audio element for playback -->
     <audio id="audio-element" preload="metadata" playsinline></audio>
 
-    <!-- NFC Handler Script (MUST be inline, outside modules, for user activation) -->
+    <!-- Debug logger for NFC troubleshooting -->
     <script>
-        // Debug logger
         window.debugLog = function(msg) {
             var log = document.getElementById('debug-log');
             var time = new Date().toLocaleTimeString();
@@ -53,81 +49,7 @@
             log.scrollTop = log.scrollHeight;
             console.log('[NFC Debug]', msg);
         };
-
-        // Show the global NFC button
-        window.showGlobalNfcBtn = function() {
-            document.getElementById('global-nfc-btn').style.display = 'block';
-        };
-
-        // Hide the global NFC button
-        window.hideGlobalNfcBtn = function() {
-            document.getElementById('global-nfc-btn').style.display = 'none';
-        };
-
-        // NFC button handler - DIRECT click, no Shadow DOM, no event bus
-        document.getElementById('global-nfc-btn').addEventListener('click', async function() {
-            var btn = this;
-            debugLog('Button clicked');
-            btn.textContent = 'Starting...';
-            btn.disabled = true;
-
-            try {
-                if (!('NDEFReader' in window)) {
-                    debugLog('NDEFReader not in window - NFC not supported');
-                    btn.textContent = 'NFC Not Supported';
-                    return;
-                }
-
-                debugLog('Creating NDEFReader...');
-                var reader = new NDEFReader();
-
-                debugLog('Setting onreading handler...');
-                reader.onreading = function(event) {
-                    debugLog('TAG READ! Serial: ' + event.serialNumber);
-
-                    var url = null;
-                    if (event.message && event.message.records) {
-                        for (var i = 0; i < event.message.records.length; i++) {
-                            var record = event.message.records[i];
-                            if (record.recordType === 'url') {
-                                var decoder = new TextDecoder();
-                                url = decoder.decode(record.data);
-                                debugLog('URL from tag: ' + url);
-                                break;
-                            }
-                        }
-                    }
-
-                    // Dispatch event for app.js to handle
-                    window.dispatchEvent(new CustomEvent('nfc-tag-scanned', {
-                        detail: {
-                            serial: event.serialNumber,
-                            url: url,
-                            message: event.message
-                        }
-                    }));
-                };
-
-                reader.onreadingerror = function(e) {
-                    debugLog('Reading error: ' + (e.message || 'unknown'));
-                };
-
-                debugLog('Calling reader.scan()...');
-                await reader.scan();
-                debugLog('scan() returned - NFC is now active!');
-
-                btn.textContent = '📡 Scanning... Tap Pebbble';
-                btn.style.background = '#22c55e';
-
-            } catch (e) {
-                debugLog('ERROR: ' + e.name + ' - ' + e.message);
-                btn.textContent = 'Error - Try Again';
-                btn.style.background = '#ef4444';
-                btn.disabled = false;
-            }
-        });
-
-        debugLog('NFC handler script loaded');
+        debugLog('Debug logger ready');
     </script>
 
     <!-- App modules -->

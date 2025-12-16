@@ -5,6 +5,7 @@
 
 import { eventBus, Events } from '../services/EventBus.js';
 import { t } from '../services/I18nService.js';
+import { nfc } from '../services/NFCService.js';
 
 class NfcPrompt extends HTMLElement {
     constructor() {
@@ -16,13 +17,6 @@ class NfcPrompt extends HTMLElement {
     connectedCallback() {
         this.render();
         this.setupEventListeners();
-        // Show global NFC button (outside Shadow DOM for user activation)
-        if (window.showGlobalNfcBtn) window.showGlobalNfcBtn();
-    }
-
-    disconnectedCallback() {
-        // Hide global NFC button when this component is removed
-        if (window.hideGlobalNfcBtn) window.hideGlobalNfcBtn();
     }
 
     setupEventListeners() {
@@ -49,7 +43,7 @@ class NfcPrompt extends HTMLElement {
         });
     }
 
-    activateNfc() {
+    async activateNfc() {
         const btn = this.shadowRoot.getElementById('activate-btn');
 
         if (btn) {
@@ -57,9 +51,76 @@ class NfcPrompt extends HTMLElement {
             btn.disabled = true;
         }
 
-        // Emit request - let PebbblePlayer handle the actual NFC call
-        // This avoids nested Shadow DOM issues with user activation
-        eventBus.emit(Events.NFC_ACTIVATE_REQUEST);
+        // Debug logging
+        if (window.debugLog) window.debugLog('activateNfc called');
+
+        // Check NFC support
+        if (!('NDEFReader' in window)) {
+            if (window.debugLog) window.debugLog('NDEFReader not available');
+            this.showError(t('nfc.notSupported'));
+            if (btn) {
+                btn.textContent = 'NFC Not Supported';
+            }
+            return;
+        }
+
+        try {
+            if (window.debugLog) window.debugLog('Creating NDEFReader...');
+            const reader = new NDEFReader();
+
+            if (window.debugLog) window.debugLog('Setting up onreading handler...');
+            reader.onreading = (event) => {
+                if (window.debugLog) window.debugLog('TAG READ: ' + event.serialNumber);
+
+                let url = null;
+                if (event.message && event.message.records) {
+                    for (const record of event.message.records) {
+                        if (record.recordType === 'url') {
+                            const decoder = new TextDecoder();
+                            url = decoder.decode(record.data);
+                            break;
+                        }
+                    }
+                }
+
+                // Emit tag read event for the app to handle
+                eventBus.emit(Events.NFC_TAG_READ, {
+                    serial: nfc.formatSerial(event.serialNumber),
+                    url: url,
+                    raw: event
+                });
+            };
+
+            reader.onreadingerror = (event) => {
+                if (window.debugLog) window.debugLog('Reading error: ' + event);
+                console.error('NFC reading error:', event);
+            };
+
+            if (window.debugLog) window.debugLog('Calling reader.scan()...');
+            await reader.scan();
+            if (window.debugLog) window.debugLog('scan() returned - NFC active!');
+
+            this.isScanning = true;
+            this.render();
+            eventBus.emit(Events.NFC_ACTIVATED);
+
+        } catch (error) {
+            if (window.debugLog) window.debugLog('ERROR: ' + error.name + ' - ' + error.message);
+            console.error('NFC error:', error);
+
+            let message = 'Failed to start NFC reader';
+            if (error.name === 'NotAllowedError') {
+                message = 'NFC permission denied';
+            } else if (error.name === 'NotSupportedError') {
+                message = 'NFC is not supported';
+            }
+
+            this.showError(message);
+            if (btn) {
+                btn.textContent = 'Error - Try Again';
+                btn.disabled = false;
+            }
+        }
     }
 
     showError(message) {
