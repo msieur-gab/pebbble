@@ -16,40 +16,149 @@
     <link rel="stylesheet" href="css/animations.css">
 
     <title>Pebbble Player</title>
+    <style>
+        /* NFC Section - outside Shadow DOM for user activation */
+        #nfc-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            min-height: 60vh;
+        }
+        #nfc-section.hidden { display: none; }
+        #nfc-section h2 { color: #fff; margin-bottom: 0.5rem; }
+        #nfc-section p { color: #888; margin-bottom: 2rem; }
+        #nfc-scan-btn {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: #FF4D00;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 77, 0, 0.3);
+        }
+        #nfc-scan-btn:disabled { background: #555; cursor: not-allowed; }
+        #nfc-scan-btn.scanning { background: #22c55e; }
+        #nfc-log {
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            font-size: 11px;
+            border-radius: 8px;
+            max-width: 300px;
+            max-height: 150px;
+            overflow-y: auto;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
-    <!-- Debug Panel (sliding from bottom) -->
-    <div id="debug-panel" style="position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;background:#111;color:#0f0;font-family:monospace;font-size:11px;padding:8px;transform:translateY(100%);transition:transform 0.3s;z-index:9999;border-top:2px solid #0f0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="color:#0f0;font-weight:bold;">>> DEBUG LOG <<</span>
-            <button onclick="this.parentElement.parentElement.style.transform='translateY(100%)'" style="background:#333;color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;">Close</button>
-        </div>
-        <div id="debug-log"></div>
+    <!-- NFC Section - Plain HTML, no Shadow DOM, proven to work -->
+    <div id="nfc-section">
+        <h2>📡 Pebbble Player</h2>
+        <p>Tap the button, then scan your Pebbble</p>
+        <button id="nfc-scan-btn">Activate NFC</button>
+        <div id="nfc-log"></div>
     </div>
-    <button id="show-debug" onclick="document.getElementById('debug-panel').style.transform='translateY(0)'" style="position:fixed;bottom:10px;right:10px;background:#222;color:#0f0;border:1px solid #0f0;padding:6px 10px;border-radius:4px;z-index:9998;font-size:11px;cursor:pointer;">Debug v8</button>
 
-    <!-- Global NFC Button removed - now using Shadow DOM component directly -->
-
-    <main id="app">
-        <!-- App components will be mounted here -->
+    <!-- App Section - hidden until NFC tag is read -->
+    <main id="app" style="display:none;">
         <pebbble-player></pebbble-player>
     </main>
 
     <!-- Audio element for playback -->
     <audio id="audio-element" preload="metadata" playsinline></audio>
 
-    <!-- Debug logger for NFC troubleshooting -->
+    <!-- NFC Handler - Plain JavaScript, exactly like working test page -->
     <script>
-        window.debugLog = function(msg) {
-            var log = document.getElementById('debug-log');
-            var time = new Date().toLocaleTimeString();
-            var div = document.createElement('div');
-            div.textContent = time + ': ' + msg;
-            log.appendChild(div);
-            log.scrollTop = log.scrollHeight;
-            console.log('[NFC Debug]', msg);
-        };
-        debugLog('Debug logger ready');
+        (function() {
+            var logEl = document.getElementById('nfc-log');
+            var btn = document.getElementById('nfc-scan-btn');
+            var nfcSection = document.getElementById('nfc-section');
+            var appSection = document.getElementById('app');
+
+            function log(msg) {
+                var div = document.createElement('div');
+                div.textContent = new Date().toLocaleTimeString() + ': ' + msg;
+                logEl.appendChild(div);
+                logEl.scrollTop = logEl.scrollHeight;
+                console.log('[NFC]', msg);
+            }
+
+            log('Ready');
+            log('NDEFReader: ' + ('NDEFReader' in window));
+
+            btn.addEventListener('click', async function() {
+                log('Button clicked');
+                btn.textContent = 'Starting...';
+                btn.disabled = true;
+
+                try {
+                    log('Creating NDEFReader...');
+                    var ndef = new NDEFReader();
+
+                    log('Calling scan()...');
+                    await ndef.scan();
+                    log('NFC Active! Tap your Pebbble');
+
+                    btn.textContent = 'Scanning... Tap Pebbble';
+                    btn.classList.add('scanning');
+
+                    ndef.addEventListener('reading', function(event) {
+                        log('TAG READ!');
+                        log('Serial: ' + event.serialNumber);
+
+                        var url = null;
+                        if (event.message && event.message.records) {
+                            for (var i = 0; i < event.message.records.length; i++) {
+                                var record = event.message.records[i];
+                                if (record.recordType === 'url') {
+                                    var decoder = new TextDecoder();
+                                    url = decoder.decode(record.data);
+                                    log('URL: ' + url);
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Hide NFC section, show app
+                        nfcSection.classList.add('hidden');
+                        appSection.style.display = 'block';
+
+                        // Dispatch event for app.js to handle
+                        window.dispatchEvent(new CustomEvent('pebbble-nfc-read', {
+                            detail: {
+                                serial: event.serialNumber,
+                                url: url
+                            }
+                        }));
+                    });
+
+                    ndef.addEventListener('readingerror', function() {
+                        log('Read error - try again');
+                    });
+
+                } catch (e) {
+                    log('ERROR: ' + e.name + ' - ' + e.message);
+                    btn.textContent = 'Error - Retry';
+                    btn.disabled = false;
+                }
+            });
+
+            // Check if launched via NFC URL (has playlistHash)
+            var hash = window.location.hash.slice(1);
+            if (hash && hash.includes('playlistHash')) {
+                log('Launched via NFC URL');
+                document.querySelector('#nfc-section p').textContent = 'Scan your Pebbble to unlock';
+                btn.textContent = 'Scan to Unlock';
+            }
+        })();
     </script>
 
     <!-- App modules -->

@@ -116,28 +116,19 @@ document.body.addEventListener('touchmove', (e) => {
     }
 }, { passive: false });
 
-// Listen for NFC tag scanned from global button (index.html)
-window.addEventListener('nfc-tag-scanned', (e) => {
-    console.log('📡 NFC tag scanned via global button', e.detail);
-    if (window.debugLog) window.debugLog('App received nfc-tag-scanned event');
+// Listen for NFC tag read from index.html (plain JS, outside Shadow DOM)
+window.addEventListener('pebbble-nfc-read', (e) => {
+    console.log('📡 NFC tag read:', e.detail);
 
-    // Hide the global button
-    if (window.hideGlobalNfcBtn) window.hideGlobalNfcBtn();
-
-    // Format serial and emit to app
     const serial = e.detail.serial;
     const url = e.detail.url;
 
+    // Emit to app components
     eventBus.emit(Events.NFC_TAG_READ, {
         serial: serial ? serial.toUpperCase() : null,
         url: url,
         raw: e.detail
     });
-});
-
-// Show global NFC button when NFC prompt is displayed
-eventBus.on(Events.NFC_ACTIVATE_REQUEST, () => {
-    if (window.showGlobalNfcBtn) window.showGlobalNfcBtn();
 });
 
 // Initialize when DOM is ready
