@@ -38,20 +38,19 @@ class NFCService {
 
         try {
             this.reader = new NDEFReader();
-            this.abortController = new AbortController();
 
-            this.reader.addEventListener('reading', (event) => {
+            this.reader.onreading = (event) => {
                 this.handleReading(event);
-            });
+            };
 
-            this.reader.addEventListener('readingerror', (event) => {
+            this.reader.onreadingerror = (event) => {
                 console.error('NFCService: Reading error', event);
                 eventBus.emit(Events.NFC_ERROR, {
                     message: 'Failed to read the tag'
                 });
-            });
+            };
 
-            await this.reader.scan({ signal: this.abortController.signal });
+            await this.reader.scan();
 
             this.isActive = true;
             eventBus.emit(Events.NFC_ACTIVATED);
