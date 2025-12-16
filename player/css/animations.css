@@ -1,0 +1,323 @@
+/**
+ * Pebbble Player - Animations
+ * Keyframes and animation utilities
+ */
+
+/* ============================================
+   Keyframes
+   ============================================ */
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-5px) rotate(1deg);
+    }
+    75% {
+        transform: translateY(-3px) rotate(-1deg);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 77, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 77, 0, 0.5);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in-scale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes wave {
+    0%, 100% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(0.5);
+    }
+}
+
+/* ============================================
+   Animation Classes
+   ============================================ */
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.animate-bounce {
+    animation: bounce 1s ease-in-out infinite;
+}
+
+.animate-float {
+    animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+    animation: fade-in 300ms ease-out forwards;
+}
+
+.animate-fade-in-up {
+    animation: fade-in-up 400ms ease-out forwards;
+}
+
+.animate-fade-in-scale {
+    animation: fade-in-scale 300ms ease-out forwards;
+}
+
+.animate-slide-up {
+    animation: slide-up 300ms ease-out forwards;
+}
+
+/* ============================================
+   Loading States
+   ============================================ */
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--color-surface) 25%,
+        var(--color-bg-elevated) 50%,
+        var(--color-surface) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+.skeleton--text {
+    height: 1em;
+    width: 80%;
+}
+
+.skeleton--circle {
+    border-radius: var(--radius-full);
+}
+
+/* ============================================
+   Audio Visualizer Bars
+   ============================================ */
+
+.audio-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    height: 24px;
+}
+
+.audio-bars__bar {
+    width: 3px;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+    animation: wave 0.8s ease-in-out infinite;
+}
+
+.audio-bars__bar:nth-child(1) { animation-delay: 0s; height: 60%; }
+.audio-bars__bar:nth-child(2) { animation-delay: 0.1s; height: 100%; }
+.audio-bars__bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
+.audio-bars__bar:nth-child(4) { animation-delay: 0.3s; height: 80%; }
+.audio-bars__bar:nth-child(5) { animation-delay: 0.4s; height: 50%; }
+
+.audio-bars--paused .audio-bars__bar {
+    animation-play-state: paused;
+}
+
+/* ============================================
+   NFC Scanning Animation
+   ============================================ */
+
+.nfc-scan {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nfc-scan__ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-full);
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.nfc-scan__ring:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.nfc-scan__ring:nth-child(3) {
+    animation-delay: 1s;
+}
+
+.nfc-scan__icon {
+    font-size: 4rem;
+    color: var(--color-accent);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Stone/Pebble Animation (for canvas fallback)
+   ============================================ */
+
+.stone-visual {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.stone-visual__shape {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg,
+        var(--color-accent) 0%,
+        #cc3d00 50%,
+        #993000 100%
+    );
+    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+    box-shadow:
+        inset -10px -10px 30px rgba(0, 0, 0, 0.3),
+        inset 5px 5px 15px rgba(255, 255, 255, 0.1),
+        var(--shadow-lg);
+    animation: float 4s ease-in-out infinite;
+}
+
+.stone-visual--playing .stone-visual__shape {
+    animation: float 2s ease-in-out infinite, glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   Transition Utilities
+   ============================================ */
+
+.transition-all {
+    transition: all var(--transition-base);
+}
+
+.transition-colors {
+    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.transition-transform {
+    transition: transform var(--transition-fast);
+}
+
+.transition-opacity {
+    transition: opacity var(--transition-fast);
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

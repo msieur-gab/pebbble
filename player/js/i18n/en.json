@@ -1,0 +1,80 @@
+{
+    "app": {
+        "name": "Pebbble Player"
+    },
+    "nfc": {
+        "activate": "Activate NFC",
+        "scanning": "Hold your stone close...",
+        "notSupported": "NFC is not supported on this device",
+        "error": "Failed to read the stone"
+    },
+    "welcome": {
+        "title": "You have a magic stone!",
+        "subtitle": "Your Pebbble contains special messages just for you",
+        "continue": "Continue"
+    },
+    "deviceMode": {
+        "title": "Is this your device?",
+        "subtitle": "This helps us keep your messages safe",
+        "personal": {
+            "label": "My Device",
+            "description": "Save messages for offline listening"
+        },
+        "shared": {
+            "label": "Shared Device",
+            "description": "Messages will not be saved"
+        },
+        "remember": "Remember my choice"
+    },
+    "player": {
+        "nowPlaying": "Now Playing",
+        "playlist": "Playlist",
+        "track": "Track",
+        "of": "of"
+    },
+    "controls": {
+        "play": "Play",
+        "pause": "Pause",
+        "previous": "Previous",
+        "next": "Next",
+        "repeatOff": "Repeat Off",
+        "repeatOne": "Repeat One",
+        "repeatAll": "Repeat All"
+    },
+    "timer": {
+        "title": "Sleep Timer",
+        "off": "Off",
+        "minutes": "{n} min",
+        "custom": "Custom",
+        "remaining": "{time} remaining",
+        "setTimer": "Set Timer"
+    },
+    "dateLock": {
+        "locked": "Locked",
+        "availableIn": "Available in {days} days",
+        "availableOn": "Available on {date}",
+        "availableUntil": "Available until {date}",
+        "expired": "No longer available",
+        "unlocked": "Now available!"
+    },
+    "storage": {
+        "downloading": "Downloading messages...",
+        "decrypting": "Decrypting...",
+        "ready": "Ready to play",
+        "cached": "Saved for offline",
+        "error": "Failed to load messages"
+    },
+    "errors": {
+        "nfcPermission": "Please allow NFC access to continue",
+        "decryptionFailed": "Could not unlock this message",
+        "networkError": "Please check your connection",
+        "unknownError": "Something went wrong"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "clearData": "Clear saved messages",
+        "clearConfirm": "Are you sure? This will remove all saved messages.",
+        "about": "About Pebbble"
+    }
+}

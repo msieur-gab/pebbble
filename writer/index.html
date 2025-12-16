@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Pebbble Playlist Writer</title>
+ <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v20m-5-5l5 5 5-5M12 2L7 7m5-5l5 5"/>
+                    <path d="M12 11a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM12 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+                </svg>
+            </div>
+            <div class="header-content">
+                <h1 class="title">Pebbble Writer</h1>
+                <p class="subtitle">Create playlists for your Pebbble</p>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <main-app></main-app>
+        </main>
+
+        <footer class="app-footer">
+            <div id="logContainer" class="log-container">
+                <h3 style="margin: 0 0 0.5rem 0; color: #22c55e; font-size: 0.75rem;">>>> LIVE LOG <<<</h3>
+                <div id="logOutput"></div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Global components -->
+    <!-- <toast-component></toast-component> -->
+    
+    <script type="module" src="config.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

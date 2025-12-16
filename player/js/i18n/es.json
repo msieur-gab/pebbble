@@ -1,0 +1,80 @@
+{
+    "app": {
+        "name": "Pebbble Player"
+    },
+    "nfc": {
+        "activate": "Activar NFC",
+        "scanning": "Acerca tu piedra...",
+        "notSupported": "NFC no es compatible con este dispositivo",
+        "error": "No se pudo leer la piedra"
+    },
+    "welcome": {
+        "title": "¡Tienes una piedra mágica!",
+        "subtitle": "Tu Pebbble contiene mensajes especiales solo para ti",
+        "continue": "Continuar"
+    },
+    "deviceMode": {
+        "title": "¿Es tu dispositivo?",
+        "subtitle": "Esto nos ayuda a mantener tus mensajes seguros",
+        "personal": {
+            "label": "Mi dispositivo",
+            "description": "Guardar mensajes para escuchar sin conexión"
+        },
+        "shared": {
+            "label": "Dispositivo compartido",
+            "description": "Los mensajes no se guardarán"
+        },
+        "remember": "Recordar mi elección"
+    },
+    "player": {
+        "nowPlaying": "Reproduciendo",
+        "playlist": "Lista de reproducción",
+        "track": "Pista",
+        "of": "de"
+    },
+    "controls": {
+        "play": "Reproducir",
+        "pause": "Pausar",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "repeatOff": "Repetir desactivado",
+        "repeatOne": "Repetir una",
+        "repeatAll": "Repetir todo"
+    },
+    "timer": {
+        "title": "Temporizador de sueño",
+        "off": "Desactivado",
+        "minutes": "{n} min",
+        "custom": "Personalizado",
+        "remaining": "{time} restante",
+        "setTimer": "Establecer temporizador"
+    },
+    "dateLock": {
+        "locked": "Bloqueado",
+        "availableIn": "Disponible en {days} días",
+        "availableOn": "Disponible el {date}",
+        "availableUntil": "Disponible hasta {date}",
+        "expired": "Ya no disponible",
+        "unlocked": "¡Ahora disponible!"
+    },
+    "storage": {
+        "downloading": "Descargando mensajes...",
+        "decrypting": "Descifrando...",
+        "ready": "Listo para reproducir",
+        "cached": "Guardado sin conexión",
+        "error": "Error al cargar mensajes"
+    },
+    "errors": {
+        "nfcPermission": "Por favor permite el acceso NFC para continuar",
+        "decryptionFailed": "No se pudo desbloquear este mensaje",
+        "networkError": "Por favor verifica tu conexión",
+        "unknownError": "Algo salió mal"
+    },
+    "settings": {
+        "title": "Configuración",
+        "language": "Idioma",
+        "clearData": "Borrar mensajes guardados",
+        "clearConfirm": "¿Estás seguro? Esto eliminará todos los mensajes guardados.",
+        "about": "Acerca de Pebbble"
+    }
+}

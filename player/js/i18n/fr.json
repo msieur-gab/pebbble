@@ -1,0 +1,80 @@
+{
+    "app": {
+        "name": "Pebbble Player"
+    },
+    "nfc": {
+        "activate": "Activer NFC",
+        "scanning": "Approchez votre pierre...",
+        "notSupported": "NFC n'est pas supporté sur cet appareil",
+        "error": "Impossible de lire la pierre"
+    },
+    "welcome": {
+        "title": "Tu as une pierre magique !",
+        "subtitle": "Ton Pebbble contient des messages spéciaux rien que pour toi",
+        "continue": "Continuer"
+    },
+    "deviceMode": {
+        "title": "C'est ton appareil ?",
+        "subtitle": "Cela nous aide à garder tes messages en sécurité",
+        "personal": {
+            "label": "Mon appareil",
+            "description": "Sauvegarder les messages pour écoute hors ligne"
+        },
+        "shared": {
+            "label": "Appareil partagé",
+            "description": "Les messages ne seront pas sauvegardés"
+        },
+        "remember": "Se souvenir de mon choix"
+    },
+    "player": {
+        "nowPlaying": "En cours",
+        "playlist": "Playlist",
+        "track": "Piste",
+        "of": "sur"
+    },
+    "controls": {
+        "play": "Lecture",
+        "pause": "Pause",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "repeatOff": "Répétition désactivée",
+        "repeatOne": "Répéter cette piste",
+        "repeatAll": "Répéter tout"
+    },
+    "timer": {
+        "title": "Minuterie de sommeil",
+        "off": "Désactivée",
+        "minutes": "{n} min",
+        "custom": "Personnalisé",
+        "remaining": "{time} restant",
+        "setTimer": "Définir minuterie"
+    },
+    "dateLock": {
+        "locked": "Verrouillé",
+        "availableIn": "Disponible dans {days} jours",
+        "availableOn": "Disponible le {date}",
+        "availableUntil": "Disponible jusqu'au {date}",
+        "expired": "Plus disponible",
+        "unlocked": "Maintenant disponible !"
+    },
+    "storage": {
+        "downloading": "Téléchargement des messages...",
+        "decrypting": "Décryptage...",
+        "ready": "Prêt à écouter",
+        "cached": "Sauvegardé hors ligne",
+        "error": "Échec du chargement des messages"
+    },
+    "errors": {
+        "nfcPermission": "Veuillez autoriser l'accès NFC pour continuer",
+        "decryptionFailed": "Impossible de déverrouiller ce message",
+        "networkError": "Veuillez vérifier votre connexion",
+        "unknownError": "Une erreur s'est produite"
+    },
+    "settings": {
+        "title": "Paramètres",
+        "language": "Langue",
+        "clearData": "Supprimer les messages sauvegardés",
+        "clearConfirm": "Êtes-vous sûr ? Cela supprimera tous les messages sauvegardés.",
+        "about": "À propos de Pebbble"
+    }
+}

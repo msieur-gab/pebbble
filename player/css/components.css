@@ -1,0 +1,534 @@
+/**
+ * Pebbble Player - Component Styles
+ * Styles for web components (outside shadow DOM)
+ */
+
+/* ============================================
+   Layout Components
+   ============================================ */
+
+/* Main player container */
+.player-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: var(--space-6);
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Screen sections */
+.screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+}
+
+.screen--hidden {
+    display: none;
+}
+
+/* ============================================
+   Cards & Surfaces
+   ============================================ */
+
+.card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+}
+
+.card--elevated {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-surface);
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-weight: 500;
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+}
+
+.btn--primary {
+    background: var(--color-accent);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.btn--primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn--primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn--secondary {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-surface);
+}
+
+.btn--secondary:hover:not(:disabled) {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-muted);
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-text-secondary);
+}
+
+.btn--ghost:hover:not(:disabled) {
+    color: var(--color-text-primary);
+    background: var(--color-accent-muted);
+}
+
+.btn--icon {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: var(--radius-full);
+}
+
+.btn--icon-lg {
+    width: 72px;
+    height: 72px;
+}
+
+.btn--icon-sm {
+    width: 36px;
+    height: 36px;
+}
+
+/* ============================================
+   Play Button (special)
+   ============================================ */
+
+.play-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background: var(--color-accent);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+    transition: all var(--transition-base);
+}
+
+.play-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg), 0 0 30px rgba(255, 77, 0, 0.4);
+}
+
+.play-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.play-btn svg {
+    width: 32px;
+    height: 32px;
+    fill: currentColor;
+}
+
+/* ============================================
+   Track List
+   ============================================ */
+
+.track-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+}
+
+.track-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.track-item:hover {
+    background: var(--color-surface);
+}
+
+.track-item--active {
+    background: var(--color-accent-muted);
+    border-left: 3px solid var(--color-accent);
+}
+
+.track-item--locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.track-item__index {
+    width: 24px;
+    text-align: center;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+}
+
+.track-item__info {
+    flex: 1;
+    text-align: left;
+}
+
+.track-item__title {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.track-item__meta {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+}
+
+.track-item__duration {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+}
+
+.track-item__lock-icon {
+    color: var(--color-warning);
+}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+
+.progress-container {
+    width: 100%;
+    padding: var(--space-4) 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--color-surface);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.progress-bar__fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+    transition: width 100ms linear;
+}
+
+.progress-times {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+}
+
+/* ============================================
+   Transport Controls
+   ============================================ */
+
+.transport {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+    padding: var(--space-6) 0;
+}
+
+.transport__btn {
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.transport__btn:hover:not(:disabled) {
+    color: var(--color-text-primary);
+    transform: scale(1.1);
+}
+
+.transport__btn svg {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+}
+
+/* ============================================
+   Mode Toggles
+   ============================================ */
+
+.modes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+}
+
+.mode-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+}
+
+.mode-btn:hover {
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+}
+
+.mode-btn--active {
+    color: var(--color-accent);
+    background: var(--color-accent-muted);
+}
+
+.mode-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* ============================================
+   Timer Display
+   ============================================ */
+
+.timer-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-family: var(--font-mono);
+    color: var(--color-text-secondary);
+}
+
+.timer-display--active {
+    background: var(--color-accent-muted);
+    color: var(--color-accent);
+}
+
+/* ============================================
+   Device Mode Selector
+   ============================================ */
+
+.device-choice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 320px;
+}
+
+.device-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-6);
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-surface);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.device-option:hover {
+    border-color: var(--color-accent);
+    background: var(--color-bg-card);
+}
+
+.device-option__icon {
+    font-size: 2rem;
+}
+
+.device-option__label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.device-option__desc {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* ============================================
+   Language Selector
+   ============================================ */
+
+.lang-selector {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.lang-btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    background: transparent;
+    transition: all var(--transition-fast);
+}
+
+.lang-btn:hover {
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+}
+
+.lang-btn--active {
+    color: var(--color-accent);
+    background: var(--color-accent-muted);
+}
+
+/* ============================================
+   Overlays & Modals
+   ============================================ */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.overlay--hidden {
+    display: none;
+}
+
+/* ============================================
+   Status Messages
+   ============================================ */
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+}
+
+.status--info {
+    background: var(--color-accent-muted);
+    color: var(--color-accent);
+}
+
+.status--success {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--color-success);
+}
+
+.status--warning {
+    background: rgba(234, 179, 8, 0.2);
+    color: var(--color-warning);
+}
+
+.status--error {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--color-error);
+}
+
+/* ============================================
+   Header
+   ============================================ */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) 0;
+}
+
+.header__title {
+    font-size: var(--text-lg);
+    font-weight: 600;
+}
+
+.header__actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* ============================================
+   Now Playing
+   ============================================ */
+
+.now-playing {
+    text-align: center;
+    padding: var(--space-4) 0;
+}
+
+.now-playing__label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+}
+
+.now-playing__title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+/* ============================================
+   Canvas Container
+   ============================================ */
+
+.canvas-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.canvas-container canvas {
+    width: 100%;
+    height: 100%;
+}

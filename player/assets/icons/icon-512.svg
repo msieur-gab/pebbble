@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="stoneGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ff6a2a"/>
+      <stop offset="40%" stop-color="#FF4D00"/>
+      <stop offset="70%" stop-color="#cc3d00"/>
+      <stop offset="100%" stop-color="#802600"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="#1a1a1a" rx="80"/>
+  <ellipse cx="256" cy="268" rx="155" ry="138" fill="url(#stoneGrad)" filter="url(#glow)" transform="rotate(-8 256 268)"/>
+  <ellipse cx="208" cy="218" rx="48" ry="32" fill="rgba(255,255,255,0.15)" transform="rotate(-20 208 218)"/>
+</svg>

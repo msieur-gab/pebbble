@@ -1,0 +1,149 @@
+/**
+ * PlaybackModes - Repeat mode toggles (off, one, all)
+ */
+
+import { eventBus, Events } from '../services/EventBus.js';
+import { audio, RepeatMode } from '../services/AudioService.js';
+import { t } from '../services/I18nService.js';
+
+class PlaybackModes extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+
+        this.repeatMode = RepeatMode.OFF;
+        this.unsubscribers = [];
+    }
+
+    connectedCallback() {
+        // Get current state from audio service
+        const state = audio.getState();
+        this.repeatMode = state.repeatMode;
+
+        this.render();
+        this.setupEventListeners();
+    }
+
+    disconnectedCallback() {
+        this.unsubscribers.forEach(unsub => unsub());
+    }
+
+    setupEventListeners() {
+        this.unsubscribers.push(
+            eventBus.on(Events.REPEAT_MODE_CHANGE, (data) => {
+                this.repeatMode = data.mode;
+                this.updateUI();
+            })
+        );
+    }
+
+    toggleRepeat() {
+        audio.cycleRepeatMode();
+    }
+
+    updateUI() {
+        const repeatBtn = this.shadowRoot.getElementById('repeat-btn');
+        const repeatIcon = this.shadowRoot.getElementById('repeat-icon');
+
+        if (!repeatBtn) return;
+
+        // Update active state
+        const isActive = this.repeatMode !== RepeatMode.OFF;
+        repeatBtn.classList.toggle('active', isActive);
+        repeatBtn.title = this.getRepeatTitle();
+
+        // Update icon based on mode
+        if (this.repeatMode === RepeatMode.ONE) {
+            repeatIcon.innerHTML = this.getRepeatOneIcon();
+        } else {
+            repeatIcon.innerHTML = this.getRepeatIcon();
+        }
+    }
+
+    getRepeatIcon() {
+        return `<svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+        </svg>`;
+    }
+
+    getRepeatOneIcon() {
+        return `<svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+            <text x="12" y="14" font-size="8" text-anchor="middle" font-weight="bold">1</text>
+        </svg>`;
+    }
+
+    render() {
+        this.shadowRoot.innerHTML = `
+            <style>
+                :host {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 48px;
+                    flex-shrink: 0;
+                }
+
+                .mode-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 48px;
+                    height: 48px;
+                    border: none;
+                    background: none;
+                    color: var(--color-text-muted, #666);
+                    border-radius: 50%;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .mode-btn:hover {
+                    color: var(--color-text-secondary, #a0a0a0);
+                    background: var(--color-surface, #333);
+                }
+
+                .mode-btn.active {
+                    color: var(--color-accent, #FF4D00);
+                }
+
+                .mode-icon {
+                    width: 22px;
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .mode-icon svg {
+                    width: 100%;
+                    height: 100%;
+                }
+            </style>
+
+            <button class="mode-btn ${this.repeatMode !== RepeatMode.OFF ? 'active' : ''}"
+                    id="repeat-btn"
+                    title="${this.getRepeatTitle()}">
+                <span class="mode-icon" id="repeat-icon">
+                    ${this.repeatMode === RepeatMode.ONE ? this.getRepeatOneIcon() : this.getRepeatIcon()}
+                </span>
+            </button>
+        `;
+
+        // Add click listener
+        const repeatBtn = this.shadowRoot.getElementById('repeat-btn');
+        repeatBtn?.addEventListener('click', () => this.toggleRepeat());
+    }
+
+    getRepeatTitle() {
+        switch (this.repeatMode) {
+            case RepeatMode.ONE: return t('controls.repeatOne');
+            case RepeatMode.ALL: return t('controls.repeatAll');
+            default: return t('controls.repeatOff');
+        }
+    }
+}
+
+customElements.define('playback-modes', PlaybackModes);
+
+export default PlaybackModes;
