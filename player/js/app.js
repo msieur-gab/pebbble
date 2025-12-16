@@ -10,7 +10,7 @@ import { audio } from './services/AudioService.js';
 import { eventBus, Events } from './services/EventBus.js';
 
 // Components
-import './components/PeeblePlayer.js';
+import './components/PebbblePlayer.js';
 import './components/NfcPrompt.js';
 import './components/MagicStoneWelcome.js';
 import './components/DeviceModeSelector.js';

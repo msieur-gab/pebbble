@@ -20,7 +20,7 @@ const STATIC_ASSETS = [
     '/js/services/IPFSService.js',
     '/js/services/AudioService.js',
     '/js/services/DateLockService.js',
-    '/js/components/PeeblePlayer.js',
+    '/js/components/PebbblePlayer.js',
     '/js/components/MagicStoneWelcome.js',
     '/js/components/DeviceModeSelector.js',
     '/js/components/NfcPrompt.js',

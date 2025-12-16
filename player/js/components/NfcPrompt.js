@@ -12,17 +12,11 @@ class NfcPrompt extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.isScanning = false;
-        this.hasPlaylistHash = false; // True when app was launched via NFC URL
-        this.unsubscribers = [];
     }
 
     connectedCallback() {
         this.render();
         this.setupEventListeners();
-    }
-
-    disconnectedCallback() {
-        this.unsubscribers.forEach(unsub => unsub());
     }
 
     setupEventListeners() {
@@ -32,44 +26,34 @@ class NfcPrompt extends HTMLElement {
         }
 
         // Listen for NFC events
-        this.unsubscribers.push(
-            eventBus.on(Events.NFC_ACTIVATED, () => {
-                this.isScanning = true;
-                this.render();
-            })
-        );
+        eventBus.on(Events.NFC_ACTIVATED, () => {
+            this.isScanning = true;
+            this.render();
+        });
 
-        this.unsubscribers.push(
-            eventBus.on(Events.NFC_ERROR, (data) => {
-                this.isScanning = false;
-                this.showError(data.message);
-            })
-        );
-
-        // Listen for rescan needed (app launched via NFC URL)
-        this.unsubscribers.push(
-            eventBus.on(Events.NFC_RESCAN_NEEDED, () => {
-                console.log('📱 NfcPrompt: Rescan mode activated');
-                this.hasPlaylistHash = true;
-                this.render();
-                // Auto-start NFC scanning
-                this.activateNfc();
-            })
-        );
+        eventBus.on(Events.NFC_ERROR, (data) => {
+            this.isScanning = false;
+            this.showError(data.message);
+        });
     }
 
     async activateNfc() {
+        console.log('🔘 Activate NFC button clicked');
+
         // Check if NFC is supported
         if (!nfc.isSupported()) {
+            console.log('❌ NFC not supported');
             this.showError(t('nfc.notSupported'));
             return;
         }
 
         try {
+            console.log('📡 Starting NFC reader...');
             await nfc.startReader();
             this.isScanning = true;
             this.render();
         } catch (error) {
+            console.error('❌ NFC error:', error);
             this.showError(error.message);
         }
     }
@@ -83,6 +67,11 @@ class NfcPrompt extends HTMLElement {
     }
 
     render() {
+        // Check if we have a playlistHash from URL (launched via NFC)
+        const hash = window.location.hash.slice(1);
+        const params = new URLSearchParams(hash);
+        const hasPlaylistHash = params.has('playlistHash');
+
         this.shadowRoot.innerHTML = `
             <style>
                 :host {
@@ -240,14 +229,14 @@ class NfcPrompt extends HTMLElement {
                 </div>
 
                 ${this.isScanning ? `
-                    <h2>${this.hasPlaylistHash ? t('welcome.title') : t('nfc.scanning')}</h2>
-                    <p class="subtitle">${this.hasPlaylistHash ? 'Scan your stone again to unlock' : 'Hold your Pebbble close to your device'}</p>
+                    <h2>${hasPlaylistHash ? t('welcome.title') : t('nfc.scanning')}</h2>
+                    <p class="subtitle">${hasPlaylistHash ? 'Hold your Pebbble close to unlock' : 'Hold your Pebbble close to your device'}</p>
                 ` : `
-                    <h2>${this.hasPlaylistHash ? t('welcome.title') : 'Ready to Listen'}</h2>
-                    <p class="subtitle">${this.hasPlaylistHash ? 'Scan your stone to unlock your messages' : 'Activate NFC to scan your magic stone'}</p>
+                    <h2>${hasPlaylistHash ? t('welcome.title') : 'Ready to Listen'}</h2>
+                    <p class="subtitle">${hasPlaylistHash ? 'Scan your Pebbble to unlock your messages' : 'Activate NFC to scan your magic stone'}</p>
                     <button id="activate-btn">
                         <span>📡</span>
-                        ${this.hasPlaylistHash ? 'Scan to Unlock' : t('nfc.activate')}
+                        ${hasPlaylistHash ? 'Scan to Unlock' : t('nfc.activate')}
                     </button>
                 `}
 

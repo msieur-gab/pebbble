@@ -87,7 +87,6 @@ export const Events = {
     NFC_ACTIVATED: 'nfc:activated',
     NFC_TAG_READ: 'nfc:tagRead',
     NFC_ERROR: 'nfc:error',
-    NFC_RESCAN_NEEDED: 'nfc:rescanNeeded',
 
     // App flow events
     WELCOME_COMPLETE: 'app:welcomeComplete',

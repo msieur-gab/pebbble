@@ -1,5 +1,5 @@
 /**
- * PeeblePlayer - Main application shell component
+ * PebbblePlayer - Main application shell component
  * Manages app flow: NFC prompt → Welcome → Device mode → Player
  */
 
@@ -22,7 +22,7 @@ const Screen = {
     ERROR: 'error'
 };
 
-class PeeblePlayer extends HTMLElement {
+class PebbblePlayer extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -41,9 +41,9 @@ class PeeblePlayer extends HTMLElement {
     }
 
     connectedCallback() {
-        console.log('🎮 PeeblePlayer connected');
+        console.log('🎮 PebbblePlayer connected');
         this.render();
-        console.log('🎮 PeeblePlayer rendered');
+        console.log('🎮 PebbblePlayer rendered');
         this.setupEventListeners();
         this.checkUrlParams();
     }
@@ -78,9 +78,6 @@ class PeeblePlayer extends HTMLElement {
 
             // Store the playlistHash for later use when we get the serial
             this.pendingPlaylistHash = playlistHash;
-
-            // Emit event so NfcPrompt knows we're in "rescan" mode
-            eventBus.emit(Events.NFC_RESCAN_NEEDED, { playlistHash });
         }
     }
 
@@ -675,6 +672,6 @@ class PeeblePlayer extends HTMLElement {
     }
 }
 
-customElements.define('pebbble-player', PeeblePlayer);
+customElements.define('pebbble-player', PebbblePlayer);
 
-export default PeeblePlayer;
+export default PebbblePlayer;
