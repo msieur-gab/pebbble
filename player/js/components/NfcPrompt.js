@@ -1,6 +1,6 @@
 /**
  * NfcPrompt - NFC activation and scanning prompt
- * Shows the initial "Activate NFC" screen with scanning animation
+ * Simplified version without Shadow DOM for better compatibility
  */
 
 import { eventBus, Events } from '../services/EventBus.js';
@@ -10,37 +10,16 @@ import { t } from '../services/I18nService.js';
 class NfcPrompt extends HTMLElement {
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
         this.isScanning = false;
     }
 
     connectedCallback() {
         this.render();
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        const activateBtn = this.shadowRoot.getElementById('activate-btn');
-        if (activateBtn) {
-            activateBtn.addEventListener('click', () => this.activateNfc());
-        }
-
-        // Listen for NFC events
-        eventBus.on(Events.NFC_ACTIVATED, () => {
-            this.isScanning = true;
-            this.render();
-        });
-
-        eventBus.on(Events.NFC_ERROR, (data) => {
-            this.isScanning = false;
-            this.showError(data.message);
-        });
     }
 
     async activateNfc() {
         console.log('🔘 Activate NFC button clicked');
 
-        // Check if NFC is supported
         if (!nfc.isSupported()) {
             console.log('❌ NFC not supported');
             this.showError(t('nfc.notSupported'));
@@ -52,6 +31,7 @@ class NfcPrompt extends HTMLElement {
             await nfc.startReader();
             this.isScanning = true;
             this.render();
+            console.log('✅ NFC reader started');
         } catch (error) {
             console.error('❌ NFC error:', error);
             this.showError(error.message);
@@ -59,7 +39,7 @@ class NfcPrompt extends HTMLElement {
     }
 
     showError(message) {
-        const errorEl = this.shadowRoot.getElementById('error-message');
+        const errorEl = this.querySelector('#error-message');
         if (errorEl) {
             errorEl.textContent = message;
             errorEl.style.display = 'block';
@@ -72,17 +52,15 @@ class NfcPrompt extends HTMLElement {
         const params = new URLSearchParams(hash);
         const hasPlaylistHash = params.has('playlistHash');
 
-        this.shadowRoot.innerHTML = `
+        this.innerHTML = `
             <style>
-                :host {
+                .nfc-prompt {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     flex: 1;
                     padding: 1.5rem;
                     text-align: center;
-                    overflow-y: auto;
-                    -webkit-overflow-scrolling: touch;
                 }
 
                 .scan-container {
@@ -93,7 +71,6 @@ class NfcPrompt extends HTMLElement {
                     align-items: center;
                     justify-content: center;
                     margin-bottom: 1.5rem;
-                    flex-shrink: 0;
                 }
 
                 .ring {
@@ -130,7 +107,7 @@ class NfcPrompt extends HTMLElement {
                     50% { opacity: 0.7; transform: scale(0.95); }
                 }
 
-                h2 {
+                .nfc-prompt h2 {
                     font-size: 1.25rem;
                     font-weight: 600;
                     color: var(--color-text-primary, #fff);
@@ -144,7 +121,7 @@ class NfcPrompt extends HTMLElement {
                     max-width: 280px;
                 }
 
-                button {
+                .nfc-btn {
                     display: inline-flex;
                     align-items: center;
                     justify-content: center;
@@ -161,15 +138,8 @@ class NfcPrompt extends HTMLElement {
                     transition: all 0.3s ease;
                 }
 
-                button:hover:not(:disabled) {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(255, 77, 0, 0.4);
-                }
-
-                button:disabled {
-                    background: var(--color-surface, #333);
-                    cursor: not-allowed;
-                    box-shadow: none;
+                .nfc-btn:active {
+                    transform: scale(0.95);
                 }
 
                 .error-message {
@@ -183,44 +153,9 @@ class NfcPrompt extends HTMLElement {
                     font-size: 0.85rem;
                     max-width: 280px;
                 }
-
-                .hint {
-                    margin-top: 3rem;
-                    padding: 1rem;
-                    background: var(--color-bg-elevated, #242424);
-                    border-radius: 12px;
-                    max-width: 280px;
-                }
-
-                .hint-title {
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                    color: var(--color-text-muted, #666);
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    margin-bottom: 0.5rem;
-                }
-
-                .hint-text {
-                    font-size: 0.85rem;
-                    color: var(--color-text-secondary, #a0a0a0);
-                    line-height: 1.4;
-                }
-
-                .main-content {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    flex-shrink: 0;
-                }
-
-                .scroll-content {
-                    width: 100%;
-                    max-width: 320px;
-                }
             </style>
 
-            <div class="main-content">
+            <div class="nfc-prompt">
                 <div class="scan-container">
                     <div class="ring ${this.isScanning ? 'active' : ''}"></div>
                     <div class="ring ${this.isScanning ? 'active' : ''}"></div>
@@ -234,7 +169,7 @@ class NfcPrompt extends HTMLElement {
                 ` : `
                     <h2>${hasPlaylistHash ? t('welcome.title') : 'Ready to Listen'}</h2>
                     <p class="subtitle">${hasPlaylistHash ? 'Scan your Pebbble to unlock your messages' : 'Activate NFC to scan your magic stone'}</p>
-                    <button id="activate-btn">
+                    <button class="nfc-btn" id="activate-btn">
                         <span>📡</span>
                         ${hasPlaylistHash ? 'Scan to Unlock' : t('nfc.activate')}
                     </button>
@@ -244,13 +179,26 @@ class NfcPrompt extends HTMLElement {
             </div>
 
             ${!this.isScanning ? `
-                <div class="scroll-content">
-                    <offline-library></offline-library>
-                </div>
+                <offline-library></offline-library>
             ` : ''}
         `;
 
-        this.setupEventListeners();
+        // Attach click handler directly after render
+        const btn = this.querySelector('#activate-btn');
+        if (btn) {
+            btn.onclick = () => this.activateNfc();
+        }
+
+        // Listen for NFC events
+        eventBus.on(Events.NFC_ACTIVATED, () => {
+            this.isScanning = true;
+            this.render();
+        });
+
+        eventBus.on(Events.NFC_ERROR, (data) => {
+            this.isScanning = false;
+            this.showError(data.message);
+        });
     }
 }
 
