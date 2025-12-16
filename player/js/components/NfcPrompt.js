@@ -38,10 +38,16 @@ class NfcPrompt extends HTMLElement {
     }
 
     async activateNfc() {
-        // Visual debug - change button text to confirm click works
         const btn = this.shadowRoot.getElementById('activate-btn');
+
+        // Listen for debug events from NFCService
+        const debugHandler = (e) => {
+            if (btn) btn.textContent = e.detail;
+        };
+        window.addEventListener('nfc-debug', debugHandler);
+
         if (btn) {
-            btn.textContent = 'Starting NFC...';
+            btn.textContent = 'Starting...';
             btn.disabled = true;
         }
 
@@ -49,14 +55,17 @@ class NfcPrompt extends HTMLElement {
         if (!nfc.isSupported()) {
             this.showError(t('nfc.notSupported'));
             if (btn) btn.textContent = 'NFC Not Supported';
+            window.removeEventListener('nfc-debug', debugHandler);
             return;
         }
 
         try {
             await nfc.startReader();
+            window.removeEventListener('nfc-debug', debugHandler);
             this.isScanning = true;
             this.render();
         } catch (error) {
+            window.removeEventListener('nfc-debug', debugHandler);
             this.showError(error.message);
             if (btn) {
                 btn.textContent = 'Error - Try Again';

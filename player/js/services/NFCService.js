@@ -37,7 +37,12 @@ class NFCService {
         }
 
         try {
+            // Visual debug: dispatch custom event for status updates
+            window.dispatchEvent(new CustomEvent('nfc-debug', { detail: 'Creating NDEFReader...' }));
+
             this.reader = new NDEFReader();
+
+            window.dispatchEvent(new CustomEvent('nfc-debug', { detail: 'Setting up handlers...' }));
 
             this.reader.onreading = (event) => {
                 this.handleReading(event);
@@ -50,12 +55,17 @@ class NFCService {
                 });
             };
 
+            window.dispatchEvent(new CustomEvent('nfc-debug', { detail: 'Calling scan()...' }));
+
             await this.reader.scan();
+
+            window.dispatchEvent(new CustomEvent('nfc-debug', { detail: 'Scan started!' }));
 
             this.isActive = true;
             eventBus.emit(Events.NFC_ACTIVATED);
 
         } catch (error) {
+            window.dispatchEvent(new CustomEvent('nfc-debug', { detail: 'Error: ' + error.message }));
             console.error('NFCService: Failed to start reader', error);
 
             let message = 'Failed to start NFC reader';
