@@ -9,6 +9,7 @@ import { storage } from './services/StorageService.js';
 import { audio } from './services/AudioService.js';
 import { eventBus, Events } from './services/EventBus.js';
 import { nfc } from './services/NFCService.js';
+import { installPrompt } from './services/InstallPromptService.js';
 
 // Components
 import './components/PebbblePlayer.js';
@@ -24,6 +25,7 @@ import './components/PlaybackModes.js';
 import './components/SleepTimer.js';
 import './components/LanguageSelector.js';
 import './components/OfflineLibrary.js';
+import './components/Toast.js';
 
 /**
  * Initialize the application
@@ -49,6 +51,9 @@ async function init() {
             audio.init(audioElement);
             console.log('🔊 Audio service ready');
         }
+
+        // 5. Initialize install prompt
+        installPrompt.init();
 
         console.log('✅ Pebbble Player ready!');
 
