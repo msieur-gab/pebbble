@@ -328,9 +328,9 @@ class PlayerSheet extends HTMLElement {
 
                 .visualization {
                     flex-shrink: 0;
-                    display: flex;
-                    justify-content: center;
-                    padding: 0.5rem 0;
+                    display: block;
+                    width: 100%;
+                    padding: 1rem 0;
                 }
 
                 .now-playing {
