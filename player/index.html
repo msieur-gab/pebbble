@@ -127,8 +127,9 @@
                             }
                         }
 
-                        // Hide NFC section (app is already visible)
+                        // Hide NFC section, show app
                         nfcSection.classList.add('hidden');
+                        appSection.style.display = 'block';
 
                         // Dispatch event for app.js to handle
                         window.dispatchEvent(new CustomEvent('pebbble-nfc-read', {

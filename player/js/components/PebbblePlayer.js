@@ -57,8 +57,8 @@ class PebbblePlayer extends HTMLElement {
 
     /**
      * Check for cached playlists and show appropriate UI
-     * - If cached content exists: show library/player
-     * - If no cached content: show NFC prompt
+     * - If cached content exists: show app's NFC prompt with library
+     * - If no cached content: show plain HTML NFC section (hide app)
      */
     async checkCachedContent() {
         try {
@@ -71,12 +71,14 @@ class PebbblePlayer extends HTMLElement {
                 this.updateState({ screen: Screen.NFC_PROMPT });
                 this.render();
             } else {
-                // New user - show NFC section
+                // New user - hide app, show plain HTML NFC section
+                document.getElementById('app')?.style.setProperty('display', 'none');
                 document.getElementById('nfc-section')?.classList.remove('hidden');
             }
         } catch (error) {
             console.warn('Could not check cached content:', error);
-            // Fallback to NFC section
+            // Fallback - hide app, show NFC section
+            document.getElementById('app')?.style.setProperty('display', 'none');
             document.getElementById('nfc-section')?.classList.remove('hidden');
         }
     }
