@@ -110,11 +110,17 @@ class TapeCanvas extends HTMLElement {
 
         this.unsubscribers.push(
             eventBus.on(Events.TRACK_CHANGE, (data) => {
-                // Reset angles on track change
                 this.state.leftAngle = 0;
                 this.state.rightAngle = 0;
                 this.state.currentTime = 0;
                 this.state.duration = data.track?.duration || 180;
+            })
+        );
+
+        // Resize when player sheet expands
+        this.unsubscribers.push(
+            eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
+                setTimeout(() => this.resize(), 50);
             })
         );
     }
