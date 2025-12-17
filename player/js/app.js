@@ -8,12 +8,12 @@ import { i18n } from './services/I18nService.js';
 import { storage } from './services/StorageService.js';
 import { audio } from './services/AudioService.js';
 import { eventBus, Events } from './services/EventBus.js';
-import { nfc } from './services/NFCService.js';
 import { installPrompt } from './services/InstallPromptService.js';
 
 // Components
 import './components/PebbblePlayer.js';
-import './components/NfcPrompt.js';
+import './components/HomeScreen.js';
+import './components/SettingsPanel.js';
 import './components/MagicStoneWelcome.js';
 import './components/DeviceModeSelector.js';
 import './components/PlaylistView.js';
@@ -119,21 +119,6 @@ document.body.addEventListener('touchmove', (e) => {
         e.preventDefault();
     }
 }, { passive: false });
-
-// Listen for NFC tag read from index.html (plain JS, outside Shadow DOM)
-window.addEventListener('pebbble-nfc-read', (e) => {
-    console.log('📡 NFC tag read:', e.detail);
-
-    const serial = e.detail.serial;
-    const url = e.detail.url;
-
-    // Emit to app components
-    eventBus.emit(Events.NFC_TAG_READ, {
-        serial: serial ? serial.toUpperCase() : null,
-        url: url,
-        raw: e.detail
-    });
-});
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {

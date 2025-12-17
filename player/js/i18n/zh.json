@@ -2,6 +2,14 @@
     "app": {
         "name": "Pebbble 播放器"
     },
+    "home": {
+        "welcome": "欢迎使用 Pebbble",
+        "welcomeBack": "欢迎回来！",
+        "library": "你的收藏",
+        "emptyLibrary": "暂无播放列表",
+        "tapToAdd": "扫描 Pebbble 标签添加第一个播放列表",
+        "settings": "设置"
+    },
     "nfc": {
         "activate": "启用 NFC",
         "scanning": "请将魔法石靠近...",
@@ -73,8 +81,10 @@
     "settings": {
         "title": "设置",
         "language": "语言",
+        "deviceMode": "设备模式",
         "clearData": "清除已保存的消息",
         "clearConfirm": "确定吗？这将删除所有已保存的消息。",
+        "dataCleared": "数据已清除",
         "about": "关于 Pebbble"
     }
 }

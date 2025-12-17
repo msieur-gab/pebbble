@@ -122,5 +122,12 @@ export const Events = {
     // UI events
     SHOW_SETTINGS: 'ui:showSettings',
     HIDE_SETTINGS: 'ui:hideSettings',
-    SHOW_TOAST: 'ui:showToast'
+    SHOW_TOAST: 'ui:showToast',
+
+    // Settings panel events
+    SETTINGS_OPEN: 'settings:open',
+    SETTINGS_CLOSE: 'settings:close',
+
+    // Home screen events
+    HOME_LOADED: 'home:loaded'
 };

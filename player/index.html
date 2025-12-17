@@ -16,153 +16,21 @@
     <link rel="stylesheet" href="css/animations.css">
 
     <title>Pebbble Player</title>
-    <style>
-        /* NFC Section - outside Shadow DOM for user activation */
-        #nfc-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            text-align: center;
-            min-height: 60vh;
-        }
-        #nfc-section.hidden { display: none; }
-        #nfc-section h2 { color: #fff; margin-bottom: 0.5rem; }
-        #nfc-section p { color: #888; margin-bottom: 2rem; }
-        #nfc-scan-btn {
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            background: #FF4D00;
-            color: #fff;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 77, 0, 0.3);
-        }
-        #nfc-scan-btn:disabled { background: #555; cursor: not-allowed; }
-        #nfc-scan-btn.scanning { background: #22c55e; }
-        #nfc-log {
-            margin-top: 1.5rem;
-            padding: 0.75rem;
-            background: #000;
-            color: #0f0;
-            font-family: monospace;
-            font-size: 11px;
-            border-radius: 8px;
-            max-width: 300px;
-            max-height: 150px;
-            overflow-y: auto;
-            text-align: left;
-        }
-    </style>
 </head>
 <body>
-    <!-- NFC Section - Plain HTML, hidden by default, shown when no cached content -->
-    <div id="nfc-section" class="hidden">
-        <h2>📡 Pebbble Player</h2>
-        <p>Tap the button, then scan your Pebbble</p>
-        <button id="nfc-scan-btn">Activate NFC</button>
-        <div id="nfc-log"></div>
-    </div>
-
-    <!-- App Section - shown by default, PebbblePlayer controls flow -->
+    <!-- Main App -->
     <main id="app">
         <pebbble-player></pebbble-player>
     </main>
+
+    <!-- Settings Panel (side drawer) -->
+    <settings-panel></settings-panel>
 
     <!-- Audio element for playback -->
     <audio id="audio-element" preload="metadata" playsinline></audio>
 
     <!-- Toast notifications -->
     <toast-notification></toast-notification>
-
-    <!-- NFC Handler - Plain JavaScript, exactly like working test page -->
-    <script>
-        (function() {
-            var logEl = document.getElementById('nfc-log');
-            var btn = document.getElementById('nfc-scan-btn');
-            var nfcSection = document.getElementById('nfc-section');
-            var appSection = document.getElementById('app');
-
-            function log(msg) {
-                var div = document.createElement('div');
-                div.textContent = new Date().toLocaleTimeString() + ': ' + msg;
-                logEl.appendChild(div);
-                logEl.scrollTop = logEl.scrollHeight;
-                console.log('[NFC]', msg);
-            }
-
-            log('Ready');
-            log('NDEFReader: ' + ('NDEFReader' in window));
-
-            btn.addEventListener('click', async function() {
-                log('Button clicked');
-                btn.textContent = 'Starting...';
-                btn.disabled = true;
-
-                try {
-                    log('Creating NDEFReader...');
-                    var ndef = new NDEFReader();
-
-                    log('Calling scan()...');
-                    await ndef.scan();
-                    log('NFC Active! Tap your Pebbble');
-
-                    btn.textContent = 'Scanning... Tap Pebbble';
-                    btn.classList.add('scanning');
-
-                    ndef.addEventListener('reading', function(event) {
-                        log('TAG READ!');
-                        log('Serial: ' + event.serialNumber);
-
-                        var url = null;
-                        if (event.message && event.message.records) {
-                            for (var i = 0; i < event.message.records.length; i++) {
-                                var record = event.message.records[i];
-                                if (record.recordType === 'url') {
-                                    var decoder = new TextDecoder();
-                                    url = decoder.decode(record.data);
-                                    log('URL: ' + url);
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Hide NFC section, show app
-                        nfcSection.classList.add('hidden');
-                        appSection.style.display = 'block';
-
-                        // Dispatch event for app.js to handle
-                        window.dispatchEvent(new CustomEvent('pebbble-nfc-read', {
-                            detail: {
-                                serial: event.serialNumber,
-                                url: url
-                            }
-                        }));
-                    });
-
-                    ndef.addEventListener('readingerror', function() {
-                        log('Read error - try again');
-                    });
-
-                } catch (e) {
-                    log('ERROR: ' + e.name + ' - ' + e.message);
-                    btn.textContent = 'Error - Retry';
-                    btn.disabled = false;
-                }
-            });
-
-            // Check if launched via NFC URL (has playlistHash)
-            var hash = window.location.hash.slice(1);
-            if (hash && hash.includes('playlistHash')) {
-                log('Launched via NFC URL');
-                document.querySelector('#nfc-section p').textContent = 'Scan your Pebbble to unlock';
-                btn.textContent = 'Scan to Unlock';
-            }
-        })();
-    </script>
 
     <!-- App modules -->
     <script type="module" src="js/app.js"></script>

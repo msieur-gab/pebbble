@@ -3,11 +3,10 @@
  * Caches app shell for offline use
  */
 
-const CACHE_NAME = 'pebbble-v9';
+const CACHE_NAME = 'pebbble-v10';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
-    '/ios.html',
     '/manifest.json',
     '/css/base.css',
     '/css/components.css',
@@ -16,16 +15,16 @@ const STATIC_ASSETS = [
     '/js/services/EventBus.js',
     '/js/services/I18nService.js',
     '/js/services/StorageService.js',
-    '/js/services/NFCService.js',
     '/js/services/CryptoService.js',
     '/js/services/IPFSService.js',
     '/js/services/AudioService.js',
     '/js/services/DateLockService.js',
     '/js/services/InstallPromptService.js',
     '/js/components/PebbblePlayer.js',
+    '/js/components/HomeScreen.js',
+    '/js/components/SettingsPanel.js',
     '/js/components/MagicStoneWelcome.js',
     '/js/components/DeviceModeSelector.js',
-    '/js/components/NfcPrompt.js',
     '/js/components/PlaylistView.js',
     '/js/components/PlayerControls.js',
     '/js/components/ProgressBar.js',

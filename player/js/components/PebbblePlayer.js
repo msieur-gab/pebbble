@@ -1,12 +1,12 @@
 /**
  * PebbblePlayer - Main application shell component
- * Manages app flow: NFC prompt → Welcome → Device mode → Player
+ * Manages app flow: Home → [Welcome → Device mode] → Loading → Player
+ * Tag data comes from URL hash: #serial=XX&playlistHash=XX
  */
 
 import { eventBus, Events } from '../services/EventBus.js';
 import { i18n, t } from '../services/I18nService.js';
 import { storage } from '../services/StorageService.js';
-import { nfc } from '../services/NFCService.js';
 import { ipfs } from '../services/IPFSService.js';
 import { cryptoService } from '../services/CryptoService.js';
 import { audio } from '../services/AudioService.js';
@@ -14,7 +14,7 @@ import { dateLock } from '../services/DateLockService.js';
 
 // App screens/states
 const Screen = {
-    NFC_PROMPT: 'nfc_prompt',
+    HOME: 'home',
     WELCOME: 'welcome',
     DEVICE_MODE: 'device_mode',
     LOADING: 'loading',
@@ -28,7 +28,7 @@ class PebbblePlayer extends HTMLElement {
         this.attachShadow({ mode: 'open' });
 
         this.state = {
-            screen: Screen.NFC_PROMPT,
+            screen: Screen.HOME,
             nfcData: null,
             playlist: [],
             error: null,
@@ -38,6 +38,7 @@ class PebbblePlayer extends HTMLElement {
         this.isLoading = false; // Guard against double loading
 
         this.unsubscribers = [];
+        this.boundHashChangeHandler = this.handleHashChange.bind(this);
     }
 
     async connectedCallback() {
@@ -46,105 +47,81 @@ class PebbblePlayer extends HTMLElement {
         console.log('🎮 PebbblePlayer rendered');
         this.setupEventListeners();
 
-        // Check URL params first - if handled, don't check cached content
-        const urlHandled = this.checkUrlParams();
+        // Listen for URL hash changes (new tag taps while app is open)
+        window.addEventListener('hashchange', this.boundHashChangeHandler);
 
-        if (!urlHandled) {
-            // Check for cached playlists (owned device flow)
-            await this.checkCachedContent();
+        // Check URL params - if we have both serial and playlistHash, load directly
+        const urlParams = this.parseUrlParams();
+        if (urlParams) {
+            this.handleTagUrl(urlParams);
         }
+        // Otherwise, HOME screen will show with library
     }
 
     /**
-     * Check for cached playlists and show appropriate UI
-     * - If cached content exists: show app's NFC prompt with library
-     * - If no cached content: show plain HTML NFC section (hide app)
+     * Parse URL hash parameters for serial and playlistHash
+     * URL format: #serial=XX&playlistHash=XX
+     * @returns {Object|null} { serial, playlistHash } or null if incomplete
      */
-    async checkCachedContent() {
-        try {
-            const playlists = await storage.getAllPlaylists();
-            console.log(`📚 Found ${playlists.length} cached playlist(s)`);
-
-            if (playlists.length > 0) {
-                // Owned device with cached content - show NFC prompt with library
-                // The NfcPrompt component already includes <offline-library>
-                this.updateState({ screen: Screen.NFC_PROMPT });
-                this.render();
-            } else {
-                // New user - hide app, show plain HTML NFC section
-                document.getElementById('app')?.style.setProperty('display', 'none');
-                document.getElementById('nfc-section')?.classList.remove('hidden');
-            }
-        } catch (error) {
-            console.warn('Could not check cached content:', error);
-            // Fallback - hide app, show NFC section
-            document.getElementById('app')?.style.setProperty('display', 'none');
-            document.getElementById('nfc-section')?.classList.remove('hidden');
-        }
-    }
-
-    /**
-     * Check for URL parameters
-     * - Debug mode: #playlistHash=Qm...&serial=04:2D:B7:1A:E7:1C:90
-     * - NFC launch: #playlistHash=Qm... (need to scan for serial)
-     * @returns {boolean} true if URL was fully handled (debug mode), false otherwise
-     */
-    checkUrlParams() {
+    parseUrlParams() {
         const hash = window.location.hash.slice(1);
-        if (!hash) return false;
+        if (!hash) return null;
 
         const params = new URLSearchParams(hash);
-        const playlistHash = params.get('playlistHash');
         const serial = params.get('serial');
+        const playlistHash = params.get('playlistHash');
 
-        if (playlistHash && serial) {
-            // Debug mode: both params provided
-            console.log('🧪 Debug mode: Using URL parameters');
-            console.log(`   Playlist: ${playlistHash}`);
-            console.log(`   Serial: ${serial}`);
-
-            this.handleNfcRead({
-                serial,
-                url: `https://play.pebbble.app/#playlistHash=${playlistHash}`
-            });
-            return true; // URL fully handled
-        } else if (playlistHash) {
-            // App launched via NFC tag - we have the hash but need to scan for serial
-            console.log('📱 Launched via NFC URL, need to scan for serial');
-            console.log(`   Playlist: ${playlistHash}`);
-
-            // Store the playlistHash for later use when we get the serial
-            this.pendingPlaylistHash = playlistHash;
+        if (serial && playlistHash) {
+            return { serial: serial.toUpperCase(), playlistHash };
         }
-        return false; // Still need to show NFC prompt or cached content
+        return null;
+    }
+
+    /**
+     * Handle URL-based tag loading (from NFC tap or direct link)
+     */
+    handleTagUrl(params) {
+        const { serial, playlistHash } = params;
+        console.log('🏷️ Loading from URL parameters');
+        console.log(`   Serial: ${serial}`);
+        console.log(`   Playlist: ${playlistHash}`);
+
+        // Check if this is a first-time user
+        const remembered = localStorage.getItem('pebbble-device-mode');
+
+        // Store tag data
+        this.updateState({
+            nfcData: { serial, playlistHash, url: window.location.href }
+        });
+
+        if (remembered) {
+            // Returning user - load directly
+            this.loadPlaylist();
+        } else {
+            // First-time user - show welcome flow
+            this.updateState({ screen: Screen.WELCOME });
+            this.render();
+        }
+    }
+
+    /**
+     * Handle URL hash changes (new tag tap while app is open)
+     */
+    handleHashChange() {
+        const params = this.parseUrlParams();
+        if (params) {
+            console.log('🔄 Hash changed - new tag detected');
+            this.handleTagUrl(params);
+        }
     }
 
     disconnectedCallback() {
         this.unsubscribers.forEach(unsub => unsub());
+        window.removeEventListener('hashchange', this.boundHashChangeHandler);
         dateLock.stopWatching();
     }
 
     setupEventListeners() {
-        // NFC events
-        this.unsubscribers.push(
-            eventBus.on(Events.NFC_ACTIVATED, () => {
-                this.updateState({ screen: Screen.NFC_PROMPT });
-                this.render();
-            })
-        );
-
-        this.unsubscribers.push(
-            eventBus.on(Events.NFC_TAG_READ, (data) => {
-                this.handleNfcRead(data);
-            })
-        );
-
-        this.unsubscribers.push(
-            eventBus.on(Events.NFC_ERROR, (data) => {
-                this.showError(data.message);
-            })
-        );
-
         // App flow events
         this.unsubscribers.push(
             eventBus.on(Events.WELCOME_COMPLETE, () => {
@@ -183,37 +160,6 @@ class PebbblePlayer extends HTMLElement {
                 }
             })
         );
-    }
-
-    async handleNfcRead(data) {
-        const { serial, url } = data;
-
-        if (!serial) {
-            this.showError(t('nfc.error'));
-            return;
-        }
-
-        // Use pending playlistHash from URL if available, otherwise parse from NFC URL
-        let playlistHash = this.pendingPlaylistHash;
-        if (!playlistHash && url) {
-            playlistHash = nfc.parsePlaylistHash(url);
-        }
-
-        if (!playlistHash) {
-            this.showError(t('errors.decryptionFailed'));
-            return;
-        }
-
-        // Clear pending hash
-        this.pendingPlaylistHash = null;
-
-        // Store NFC data
-        this.updateState({
-            nfcData: { serial, url, playlistHash },
-            screen: Screen.WELCOME
-        });
-
-        this.render();
     }
 
     handleWelcomeComplete() {
@@ -596,8 +542,8 @@ class PebbblePlayer extends HTMLElement {
             </style>
 
             <div class="container">
-                <div class="screen ${screen === Screen.NFC_PROMPT ? 'active' : ''}" id="screen-nfc">
-                    <nfc-prompt></nfc-prompt>
+                <div class="screen ${screen === Screen.HOME ? 'active' : ''}" id="screen-home">
+                    <home-screen></home-screen>
                 </div>
 
                 <div class="screen ${screen === Screen.WELCOME ? 'active' : ''}" id="screen-welcome">

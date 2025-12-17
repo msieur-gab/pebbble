@@ -2,6 +2,14 @@
     "app": {
         "name": "Pebbble Player"
     },
+    "home": {
+        "welcome": "Welcome to Pebbble",
+        "welcomeBack": "Welcome back!",
+        "library": "Your Library",
+        "emptyLibrary": "No playlists yet",
+        "tapToAdd": "Tap a Pebbble tag to add your first playlist",
+        "settings": "Settings"
+    },
     "nfc": {
         "activate": "Activate NFC",
         "scanning": "Hold your stone close...",
@@ -73,8 +81,10 @@
     "settings": {
         "title": "Settings",
         "language": "Language",
+        "deviceMode": "Device Mode",
         "clearData": "Clear saved messages",
         "clearConfirm": "Are you sure? This will remove all saved messages.",
+        "dataCleared": "All data cleared",
         "about": "About Pebbble"
     }
 }
