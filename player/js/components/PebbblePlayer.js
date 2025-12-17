@@ -40,12 +40,41 @@ class PebbblePlayer extends HTMLElement {
         this.unsubscribers = [];
     }
 
-    connectedCallback() {
+    async connectedCallback() {
         console.log('🎮 PebbblePlayer connected');
         this.render();
         console.log('🎮 PebbblePlayer rendered');
         this.setupEventListeners();
         this.checkUrlParams();
+
+        // Check for cached playlists (owned device flow)
+        await this.checkCachedContent();
+    }
+
+    /**
+     * Check for cached playlists and show appropriate UI
+     * - If cached content exists: show library/player
+     * - If no cached content: show NFC prompt
+     */
+    async checkCachedContent() {
+        try {
+            const playlists = await storage.getAllPlaylists();
+            console.log(`📚 Found ${playlists.length} cached playlist(s)`);
+
+            if (playlists.length > 0) {
+                // Owned device with cached content - show NFC prompt with library
+                // The NfcPrompt component already includes <offline-library>
+                this.updateState({ screen: Screen.NFC_PROMPT });
+                this.render();
+            } else {
+                // New user - show NFC section
+                document.getElementById('nfc-section')?.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.warn('Could not check cached content:', error);
+            // Fallback to NFC section
+            document.getElementById('nfc-section')?.classList.remove('hidden');
+        }
     }
 
     /**

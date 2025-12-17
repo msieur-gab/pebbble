@@ -59,16 +59,16 @@
     </style>
 </head>
 <body>
-    <!-- NFC Section - Plain HTML, no Shadow DOM, proven to work -->
-    <div id="nfc-section">
+    <!-- NFC Section - Plain HTML, hidden by default, shown when no cached content -->
+    <div id="nfc-section" class="hidden">
         <h2>📡 Pebbble Player</h2>
         <p>Tap the button, then scan your Pebbble</p>
         <button id="nfc-scan-btn">Activate NFC</button>
         <div id="nfc-log"></div>
     </div>
 
-    <!-- App Section - hidden until NFC tag is read -->
-    <main id="app" style="display:none;">
+    <!-- App Section - shown by default, PebbblePlayer controls flow -->
+    <main id="app">
         <pebbble-player></pebbble-player>
     </main>
 
@@ -127,9 +127,8 @@
                             }
                         }
 
-                        // Hide NFC section, show app
+                        // Hide NFC section (app is already visible)
                         nfcSection.classList.add('hidden');
-                        appSection.style.display = 'block';
 
                         // Dispatch event for app.js to handle
                         window.dispatchEvent(new CustomEvent('pebbble-nfc-read', {
