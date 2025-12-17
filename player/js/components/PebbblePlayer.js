@@ -82,7 +82,7 @@ class PebbblePlayer extends HTMLElement {
     }
 
     /**
-     * Handle URL-based tag loading - always show HOME first with contextual message
+     * Handle URL-based tag loading
      */
     async handleTagUrl(params) {
         const { serial, playlistHash } = params;
@@ -95,9 +95,6 @@ class PebbblePlayer extends HTMLElement {
             nfcData: { serial, playlistHash, url: window.location.href }
         });
 
-        // Check if this tag is new (not in library)
-        const isNew = !(await this.isInLibrary(playlistHash));
-
         // Check if this is a first-time user (no device mode set)
         const remembered = localStorage.getItem('pebbble-device-mode');
 
@@ -106,12 +103,8 @@ class PebbblePlayer extends HTMLElement {
             this.updateState({ screen: Screen.WELCOME });
             this.render();
         } else {
-            // Returning user - show HOME with tag detected message
-            this.updateState({ screen: Screen.HOME });
-            this.render();
-
-            // Emit tag detected for HomeScreen to show contextual UI
-            eventBus.emit(Events.TAG_DETECTED, { serial, playlistHash, isNew });
+            // Returning user - load playlist directly
+            this.loadPlaylist();
         }
     }
 
@@ -137,22 +130,10 @@ class PebbblePlayer extends HTMLElement {
             })
         );
 
-        // Device mode set - go to HOME with tag card, let user tap to load
+        // Device mode set - load playlist
         this.unsubscribers.push(
-            eventBus.on(Events.DEVICE_MODE_SET, async () => {
-                // Show HOME screen with tag detected card
-                this.updateState({ screen: Screen.HOME });
-                this.render();
-
-                // Emit TAG_DETECTED so HomeScreen shows the action button
-                if (this.state.nfcData) {
-                    const isNew = !(await this.isInLibrary(this.state.nfcData.playlistHash));
-                    eventBus.emit(Events.TAG_DETECTED, {
-                        serial: this.state.nfcData.serial,
-                        playlistHash: this.state.nfcData.playlistHash,
-                        isNew
-                    });
-                }
+            eventBus.on(Events.DEVICE_MODE_SET, () => {
+                this.loadPlaylist();
             })
         );
 
@@ -171,22 +152,12 @@ class PebbblePlayer extends HTMLElement {
         );
     }
 
-    async handleWelcomeComplete() {
+    handleWelcomeComplete() {
         const remembered = localStorage.getItem('pebbble-device-mode');
 
         if (remembered) {
-            // User has device mode set - go to HOME with tag card
-            this.updateState({ screen: Screen.HOME });
-            this.render();
-
-            if (this.state.nfcData) {
-                const isNew = !(await this.isInLibrary(this.state.nfcData.playlistHash));
-                eventBus.emit(Events.TAG_DETECTED, {
-                    serial: this.state.nfcData.serial,
-                    playlistHash: this.state.nfcData.playlistHash,
-                    isNew
-                });
-            }
+            // User has device mode set - load playlist
+            this.loadPlaylist();
         } else {
             // First time - show device mode selector
             this.updateState({ screen: Screen.DEVICE_MODE });
