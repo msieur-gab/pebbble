@@ -17,9 +17,12 @@ class HomeScreen extends HTMLElement {
     }
 
     async connectedCallback() {
+        // Subscribe to events FIRST (before any async) to avoid race condition
+        // TAG_DETECTED may be emitted immediately after PebbblePlayer renders
+        this.setupEventListeners();
+
         await this.checkUserStatus();
         this.render();
-        this.setupEventListeners();
     }
 
     disconnectedCallback() {
