@@ -129,5 +129,14 @@ export const Events = {
     SETTINGS_CLOSE: 'settings:close',
 
     // Home screen events
-    HOME_LOADED: 'home:loaded'
+    HOME_LOADED: 'home:loaded',
+
+    // Player sheet events
+    PLAYER_SHEET_OPEN: 'player:sheetOpen',
+    PLAYER_SHEET_CLOSE: 'player:sheetClose',
+    PLAYER_SHEET_EXPAND: 'player:sheetExpand',
+    PLAYER_SHEET_COLLAPSE: 'player:sheetCollapse',
+
+    // Tag detection
+    TAG_DETECTED: 'app:tagDetected'
 };

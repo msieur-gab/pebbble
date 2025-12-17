@@ -1,7 +1,8 @@
 /**
  * PebbblePlayer - Main application shell component
- * Manages app flow: Home → [Welcome → Device mode] → Loading → Player
+ * Manages app flow: Home → [Welcome → Device mode] → Loading → Home (with player sheet)
  * Tag data comes from URL hash: #serial=XX&playlistHash=XX
+ * Player is a bottom sheet overlay, not a separate screen
  */
 
 import { eventBus, Events } from '../services/EventBus.js';
@@ -12,13 +13,12 @@ import { cryptoService } from '../services/CryptoService.js';
 import { audio } from '../services/AudioService.js';
 import { dateLock } from '../services/DateLockService.js';
 
-// App screens/states
+// App screens/states (PLAYER is now a sheet overlay, not a screen)
 const Screen = {
     HOME: 'home',
     WELCOME: 'welcome',
     DEVICE_MODE: 'device_mode',
     LOADING: 'loading',
-    PLAYER: 'player',
     ERROR: 'error'
 };
 
@@ -35,8 +35,7 @@ class PebbblePlayer extends HTMLElement {
             loadingMessage: ''
         };
 
-        this.isLoading = false; // Guard against double loading
-
+        this.isLoading = false;
         this.unsubscribers = [];
         this.boundHashChangeHandler = this.handleHashChange.bind(this);
     }
@@ -44,25 +43,18 @@ class PebbblePlayer extends HTMLElement {
     async connectedCallback() {
         console.log('🎮 PebbblePlayer connected');
         this.render();
-        console.log('🎮 PebbblePlayer rendered');
         this.setupEventListeners();
 
         // Listen for URL hash changes (new tag taps while app is open)
         window.addEventListener('hashchange', this.boundHashChangeHandler);
 
-        // Check URL params - if we have both serial and playlistHash, load directly
+        // Check URL params - if we have both serial and playlistHash, handle tag
         const urlParams = this.parseUrlParams();
         if (urlParams) {
             this.handleTagUrl(urlParams);
         }
-        // Otherwise, HOME screen will show with library
     }
 
-    /**
-     * Parse URL hash parameters for serial and playlistHash
-     * URL format: #serial=XX&playlistHash=XX
-     * @returns {Object|null} { serial, playlistHash } or null if incomplete
-     */
     parseUrlParams() {
         const hash = window.location.hash.slice(1);
         if (!hash) return null;
@@ -78,35 +70,51 @@ class PebbblePlayer extends HTMLElement {
     }
 
     /**
-     * Handle URL-based tag loading (from NFC tap or direct link)
+     * Check if a playlist is already in the user's library
      */
-    handleTagUrl(params) {
+    async isInLibrary(playlistHash) {
+        try {
+            const playlists = await storage.getAllPlaylists();
+            return playlists.some(p => p.id === playlistHash);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Handle URL-based tag loading - always show HOME first with contextual message
+     */
+    async handleTagUrl(params) {
         const { serial, playlistHash } = params;
-        console.log('🏷️ Loading from URL parameters');
+        console.log('🏷️ Tag detected from URL');
         console.log(`   Serial: ${serial}`);
         console.log(`   Playlist: ${playlistHash}`);
-
-        // Check if this is a first-time user
-        const remembered = localStorage.getItem('pebbble-device-mode');
 
         // Store tag data
         this.updateState({
             nfcData: { serial, playlistHash, url: window.location.href }
         });
 
-        if (remembered) {
-            // Returning user - load directly
-            this.loadPlaylist();
-        } else {
+        // Check if this tag is new (not in library)
+        const isNew = !(await this.isInLibrary(playlistHash));
+
+        // Check if this is a first-time user (no device mode set)
+        const remembered = localStorage.getItem('pebbble-device-mode');
+
+        if (!remembered) {
             // First-time user - show welcome flow
             this.updateState({ screen: Screen.WELCOME });
             this.render();
+        } else {
+            // Returning user - show HOME with tag detected message
+            this.updateState({ screen: Screen.HOME });
+            this.render();
+
+            // Emit tag detected for HomeScreen to show contextual UI
+            eventBus.emit(Events.TAG_DETECTED, { serial, playlistHash, isNew });
         }
     }
 
-    /**
-     * Handle URL hash changes (new tag tap while app is open)
-     */
     handleHashChange() {
         const params = this.parseUrlParams();
         if (params) {
@@ -122,13 +130,14 @@ class PebbblePlayer extends HTMLElement {
     }
 
     setupEventListeners() {
-        // App flow events
+        // Welcome complete
         this.unsubscribers.push(
             eventBus.on(Events.WELCOME_COMPLETE, () => {
                 this.handleWelcomeComplete();
             })
         );
 
+        // Device mode set
         this.unsubscribers.push(
             eventBus.on(Events.DEVICE_MODE_SET, () => {
                 this.loadPlaylist();
@@ -139,51 +148,31 @@ class PebbblePlayer extends HTMLElement {
         this.unsubscribers.push(
             eventBus.on(Events.LANGUAGE_CHANGE, () => {
                 this.render();
-                // Restore now playing title after re-render
-                this.updateNowPlayingTitle();
             })
         );
 
-        // Offline playlist selection
+        // Offline playlist selection (from library or tag action)
         this.unsubscribers.push(
             eventBus.on(Events.OFFLINE_PLAYLIST_SELECT, (data) => {
                 this.handleOfflinePlaylistSelect(data);
             })
         );
-
-        // Track change - update now playing title
-        this.unsubscribers.push(
-            eventBus.on(Events.TRACK_CHANGE, (data) => {
-                const titleEl = this.shadowRoot?.getElementById('current-track-title');
-                if (titleEl && data.track) {
-                    titleEl.textContent = data.track.title;
-                }
-            })
-        );
     }
 
     handleWelcomeComplete() {
-        // Check if device mode is already set
-        const mode = storage.getDeviceMode();
         const remembered = localStorage.getItem('pebbble-device-mode');
 
         if (remembered) {
-            // Already have a preference, go straight to loading
             this.loadPlaylist();
         } else {
-            // Need to ask about device mode
             this.updateState({ screen: Screen.DEVICE_MODE });
             this.render();
         }
     }
 
-    /**
-     * Handle selection of an offline/cached playlist
-     */
     handleOfflinePlaylistSelect(data) {
         const { playlistHash, serial } = data;
 
-        // Set up nfcData as if we scanned the tag
         this.updateState({
             nfcData: {
                 serial,
@@ -192,7 +181,6 @@ class PebbblePlayer extends HTMLElement {
             }
         });
 
-        // Load playlist directly (skip welcome since we already have permission)
         this.loadPlaylist();
     }
 
@@ -200,13 +188,13 @@ class PebbblePlayer extends HTMLElement {
         const { nfcData } = this.state;
         if (!nfcData) return;
 
-        // Prevent double loading
         if (this.isLoading) {
             console.log('⚠️ Already loading, skipping duplicate call');
             return;
         }
         this.isLoading = true;
 
+        // Show loading screen
         this.updateState({
             screen: Screen.LOADING,
             loadingMessage: t('storage.downloading')
@@ -214,7 +202,6 @@ class PebbblePlayer extends HTMLElement {
         this.render();
 
         try {
-            // Check if playlist is cached
             const cachedPlaylist = await storage.getPlaylist(nfcData.playlistHash);
             const cachedAudio = await storage.getPlaylistAudio(nfcData.playlistHash);
 
@@ -230,7 +217,6 @@ class PebbblePlayer extends HTMLElement {
             dateLock.startWatching(() => {
                 const updated = dateLock.annotatePlaylist(this.state.playlist);
                 this.updateState({ playlist: updated });
-                this.render();
             });
 
         } catch (error) {
@@ -241,27 +227,14 @@ class PebbblePlayer extends HTMLElement {
         }
     }
 
-    /**
-     * Load playlist from IndexedDB cache
-     */
     async loadFromCache(cachedPlaylist, cachedAudio) {
         this.updateState({ loadingMessage: t('storage.cached') });
         this.render();
 
         const tracks = [];
 
-        // Show player immediately
-        this.updateState({
-            screen: Screen.PLAYER,
-            playlist: []
-        });
-        this.render();
-
-        // Build tracks from cached audio
         for (const audioRecord of cachedAudio) {
             const audioUrl = URL.createObjectURL(audioRecord.blob);
-
-            // Find message info from manifest
             const messageInfo = cachedPlaylist.manifest.messages?.find(
                 m => m.messageId === audioRecord.id
             ) || {};
@@ -276,72 +249,53 @@ class PebbblePlayer extends HTMLElement {
                 timestamp: audioRecord.timestamp
             };
 
-            const annotatedTrack = {
+            tracks.push({
                 ...track,
                 lockInfo: dateLock.checkAvailability(track)
-            };
-
-            tracks.push(annotatedTrack);
-            console.log('💾 Loaded from cache:', track.title);
+            });
         }
 
-        // Sort by original order in manifest
+        // Sort by original order
         const messageOrder = cachedPlaylist.manifest.messages?.map(m => m.messageId) || [];
-        tracks.sort((a, b) => {
-            const indexA = messageOrder.indexOf(a.id);
-            const indexB = messageOrder.indexOf(b.id);
-            return indexA - indexB;
-        });
+        tracks.sort((a, b) => messageOrder.indexOf(a.id) - messageOrder.indexOf(b.id));
 
-        // Load into audio service and auto-play
+        // Load into audio service
         const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
         await audio.loadPlaylist(availableTracks);
 
         this.updateState({ playlist: tracks });
-        this.render();
-        this.updateNowPlayingTitle();
 
-        // Update last played timestamp
+        // Update last played
         await storage.updateLastPlayed(this.state.nfcData.playlistHash);
 
-        console.log('📊 Loaded from cache:', tracks.length, 'tracks');
+        // Emit playlist loaded
+        eventBus.emit(Events.PLAYLIST_LOADED, { tracks, count: tracks.length });
 
-        // Auto-play first available track
+        // Go back to HOME and open player sheet
+        this.updateState({ screen: Screen.HOME });
+        this.render();
+        eventBus.emit(Events.PLAYER_SHEET_OPEN);
+
+        // Auto-play
         if (availableTracks.length > 0) {
             await audio.play();
         }
     }
 
-    /**
-     * Load playlist from network (IPFS)
-     */
     async loadFromNetwork() {
         const { nfcData } = this.state;
-
-        // Download playlist manifest
         const manifest = await ipfs.downloadPlaylist(nfcData.playlistHash);
 
         this.updateState({ loadingMessage: t('storage.decrypting') });
         this.render();
 
-        // Show player immediately with empty playlist (progressive loading)
-        console.log('📋 Manifest:', manifest);
         const tracks = [];
-
-        this.updateState({
-            screen: Screen.PLAYER,
-            playlist: []
-        });
-        this.render();
-
-        // Download and decrypt messages progressively
         const messages = manifest.messages || [];
 
         for (let i = 0; i < messages.length; i++) {
             const message = messages[i];
 
             try {
-                // Download package
                 const pkg = await ipfs.downloadMessage(message.ipfsHash);
                 const fullPkg = {
                     ...pkg,
@@ -350,9 +304,6 @@ class PebbblePlayer extends HTMLElement {
                     availableTo: message.availableTo
                 };
 
-                console.log('🔐 Processing:', fullPkg.messageId);
-
-                // Decrypt
                 const audioBlob = await cryptoService.decryptAudioPackage(fullPkg, nfcData.serial);
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const duration = await this.getAudioDuration(audioUrl);
@@ -364,30 +315,14 @@ class PebbblePlayer extends HTMLElement {
                     duration,
                     availableFrom: fullPkg.availableFrom,
                     availableTo: fullPkg.availableTo,
-                    timestamp: fullPkg.timestamp
+                    timestamp: fullPkg.timestamp,
+                    lockInfo: dateLock.checkAvailability({
+                        availableFrom: fullPkg.availableFrom,
+                        availableTo: fullPkg.availableTo
+                    })
                 };
 
-                // Annotate with lock info
-                const annotatedTrack = {
-                    ...track,
-                    lockInfo: dateLock.checkAvailability(track)
-                };
-
-                tracks.push(annotatedTrack);
-                console.log('🎵 Track ready:', track.title, `(${i + 1}/${messages.length})`);
-
-                // Update playlist progressively
-                const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
-                await audio.loadPlaylist(availableTracks);
-
-                this.updateState({ playlist: [...tracks] });
-                this.render();
-
-                // Auto-play on first track
-                if (i === 0 && availableTracks.length > 0) {
-                    this.updateNowPlayingTitle();
-                    await audio.play();
-                }
+                tracks.push(track);
 
                 // Save to storage if in personal mode
                 if (storage.isAvailable()) {
@@ -397,12 +332,31 @@ class PebbblePlayer extends HTMLElement {
                     });
                 }
 
+                // On first track, open player sheet and start playback
+                if (i === 0) {
+                    const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
+                    await audio.loadPlaylist(availableTracks);
+
+                    this.updateState({ playlist: [...tracks], screen: Screen.HOME });
+                    this.render();
+
+                    eventBus.emit(Events.PLAYLIST_LOADED, { tracks, count: messages.length });
+                    eventBus.emit(Events.PLAYER_SHEET_OPEN);
+
+                    if (availableTracks.length > 0) {
+                        await audio.play();
+                    }
+                } else {
+                    // Progressive update
+                    const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
+                    await audio.loadPlaylist(availableTracks);
+                    this.updateState({ playlist: [...tracks] });
+                }
+
             } catch (error) {
                 console.error('Failed to process message:', message.messageId, error);
             }
         }
-
-        console.log('📊 Total tracks:', tracks.length);
 
         // Save playlist metadata
         if (storage.isAvailable()) {
@@ -413,12 +367,8 @@ class PebbblePlayer extends HTMLElement {
     getAudioDuration(url) {
         return new Promise((resolve) => {
             const tempAudio = new Audio(url);
-            tempAudio.addEventListener('loadedmetadata', () => {
-                resolve(tempAudio.duration);
-            });
-            tempAudio.addEventListener('error', () => {
-                resolve(0);
-            });
+            tempAudio.addEventListener('loadedmetadata', () => resolve(tempAudio.duration));
+            tempAudio.addEventListener('error', () => resolve(0));
         });
     }
 
@@ -432,16 +382,6 @@ class PebbblePlayer extends HTMLElement {
 
     updateState(newState) {
         this.state = { ...this.state, ...newState };
-    }
-
-    updateNowPlayingTitle() {
-        const titleEl = this.shadowRoot?.getElementById('current-track-title');
-        if (titleEl) {
-            const state = audio.getState();
-            if (state.currentTrack) {
-                titleEl.textContent = state.currentTrack.title;
-            }
-        }
     }
 
     render() {
@@ -462,6 +402,7 @@ class PebbblePlayer extends HTMLElement {
                     height: 100vh;
                     height: 100dvh;
                     padding: 1rem;
+                    padding-bottom: 80px; /* Space for mini player */
                     max-width: 480px;
                     margin: 0 auto;
                     box-sizing: border-box;
@@ -470,6 +411,7 @@ class PebbblePlayer extends HTMLElement {
                 @media (min-width: 400px) {
                     .container {
                         padding: 1.5rem;
+                        padding-bottom: 90px;
                     }
                 }
 
@@ -483,61 +425,6 @@ class PebbblePlayer extends HTMLElement {
 
                 .screen.active {
                     display: flex;
-                }
-
-                .player-screen {
-                    display: flex;
-                    flex-direction: column;
-                    flex: 1;
-                    min-height: 0;
-                    overflow-y: auto;
-                    overflow-x: hidden;
-                    -webkit-overflow-scrolling: touch;
-                }
-
-                .header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 0.25rem 0;
-                    flex-shrink: 0;
-                }
-
-                .header__title {
-                    font-size: 1.125rem;
-                    font-weight: 600;
-                }
-
-                .now-playing {
-                    text-align: center;
-                    padding: 0.25rem 0;
-                    flex-shrink: 0;
-                }
-
-                .now-playing__label {
-                    font-size: 0.7rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.1em;
-                    color: var(--color-text-muted, #666);
-                    margin-bottom: 0.25rem;
-                }
-
-                .now-playing__title {
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    color: var(--color-text-primary, #fff);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-
-                .transport-row {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
-                    padding: 0.5rem 0;
-                    flex-shrink: 0;
                 }
             </style>
 
@@ -558,10 +445,6 @@ class PebbblePlayer extends HTMLElement {
                     ${this.renderLoading()}
                 </div>
 
-                <div class="screen ${screen === Screen.PLAYER ? 'active' : ''}" id="screen-player">
-                    ${this.renderPlayer()}
-                </div>
-
                 <div class="screen ${screen === Screen.ERROR ? 'active' : ''}" id="screen-error">
                     ${this.renderError()}
                 </div>
@@ -579,55 +462,36 @@ class PebbblePlayer extends HTMLElement {
                 flex: 1;
                 text-align: center;
             ">
-                <div class="stone-visual" style="margin-bottom: 2rem;">
-                    <div class="stone-visual__shape animate-float animate-glow" style="
+                <div style="margin-bottom: 2rem;">
+                    <div style="
                         width: 100px;
                         height: 100px;
                         background: linear-gradient(135deg, var(--color-accent) 0%, #cc3d00 50%, #993000 100%);
                         border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
                         box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 77, 0, 0.3);
+                        animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
                     "></div>
                 </div>
                 <p style="color: var(--color-text-secondary);">
                     ${this.state.loadingMessage || t('storage.downloading')}
                 </p>
             </div>
-        `;
-    }
-
-    renderPlayer() {
-        return `
-            <div class="player-screen">
-                <header class="header">
-                    <h1 class="header__title">${t('player.playlist')}</h1>
-                    <div class="header__actions">
-                        <language-selector></language-selector>
-                    </div>
-                </header>
-
-                <tape-canvas></tape-canvas>
-
-                <div class="now-playing">
-                    <p class="now-playing__label">${t('player.nowPlaying')}</p>
-                    <h2 class="now-playing__title" id="current-track-title">-</h2>
-                </div>
-
-                <progress-bar></progress-bar>
-
-                <div class="transport-row">
-                    <playback-modes></playback-modes>
-                    <player-controls></player-controls>
-                    <sleep-timer></sleep-timer>
-                </div>
-
-                <playlist-view></playlist-view>
-            </div>
+            <style>
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+                @keyframes glow {
+                    0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 77, 0, 0.3); }
+                    50% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 30px rgba(255, 77, 0, 0.5); }
+                }
+            </style>
         `;
     }
 
     renderError() {
         return `
-            <div class="error-screen" style="
+            <div style="
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -637,9 +501,13 @@ class PebbblePlayer extends HTMLElement {
                 padding: 2rem;
             ">
                 <div style="
-                    font-size: 4rem;
-                    margin-bottom: 1rem;
-                ">😔</div>
+                    width: 80px;
+                    height: 80px;
+                    margin-bottom: 1.5rem;
+                    background: linear-gradient(135deg, #666 0%, #444 50%, #333 100%);
+                    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+                    opacity: 0.5;
+                "></div>
                 <h2 style="
                     color: var(--color-text-primary);
                     margin-bottom: 0.5rem;
@@ -648,8 +516,8 @@ class PebbblePlayer extends HTMLElement {
                     color: var(--color-text-secondary);
                     margin-bottom: 2rem;
                 ">${this.state.error || ''}</p>
-                <button class="btn btn--primary" id="retry-btn">
-                    ${t('nfc.activate')}
+                <button class="btn btn--primary" onclick="location.reload()">
+                    ${t('welcome.continue')}
                 </button>
             </div>
         `;

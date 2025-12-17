@@ -8,7 +8,15 @@
         "library": "你的收藏",
         "emptyLibrary": "暂无播放列表",
         "tapToAdd": "扫描 Pebbble 标签添加第一个播放列表",
-        "settings": "设置"
+        "settings": "设置",
+        "newTagDetected": "检测到新魔法石！",
+        "addToCollection": "添加到收藏",
+        "tagDetected": "准备播放",
+        "playNow": "立即播放"
+    },
+    "miniPlayer": {
+        "nowPlaying": "正在播放",
+        "swipeHint": "滑动切换曲目"
     },
     "nfc": {
         "activate": "启用 NFC",

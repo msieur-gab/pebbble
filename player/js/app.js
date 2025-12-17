@@ -26,6 +26,8 @@ import './components/SleepTimer.js';
 import './components/LanguageSelector.js';
 import './components/OfflineLibrary.js';
 import './components/Toast.js';
+import './components/PlayerSheet.js';
+import './components/MiniPlayer.js';
 
 /**
  * Initialize the application

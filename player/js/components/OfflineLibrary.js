@@ -128,13 +128,23 @@ class OfflineLibrary extends HTMLElement {
                 .playlist-icon {
                     width: 48px;
                     height: 48px;
-                    background: linear-gradient(135deg, var(--color-accent) 0%, #cc3d00 100%);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 1.5rem;
+                    background: linear-gradient(135deg, var(--color-accent, #FF4D00) 0%, #cc3d00 50%, #993000 100%);
+                    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 10px rgba(255, 77, 0, 0.3);
                     flex-shrink: 0;
+                }
+
+                .section-stone {
+                    width: 20px;
+                    height: 20px;
+                    background: linear-gradient(135deg, var(--color-accent, #FF4D00) 0%, #cc3d00 50%, #993000 100%);
+                    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 6px rgba(255, 77, 0, 0.2);
+                }
+
+                .delete-btn svg {
+                    width: 18px;
+                    height: 18px;
                 }
 
                 .playlist-info {
@@ -195,7 +205,7 @@ class OfflineLibrary extends HTMLElement {
             ${hasPlaylists ? `
                 <div class="library-section">
                     <div class="section-header">
-                        <span class="section-icon">💾</span>
+                        <div class="section-stone"></div>
                         <span class="section-title">${t('storage.cached')}</span>
                     </div>
 
@@ -222,7 +232,7 @@ class OfflineLibrary extends HTMLElement {
 
         return `
             <div class="playlist-item">
-                <div class="playlist-icon">🪨</div>
+                <div class="playlist-icon"></div>
                 <div class="playlist-info">
                     <div class="playlist-name">Pebbble</div>
                     <div class="playlist-meta">
@@ -231,7 +241,11 @@ class OfflineLibrary extends HTMLElement {
                     </div>
                 </div>
                 <div class="playlist-actions">
-                    <button class="delete-btn" title="Delete">🗑️</button>
+                    <button class="delete-btn" title="Delete">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         `;

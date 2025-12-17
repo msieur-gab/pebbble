@@ -8,7 +8,15 @@
         "library": "Tu biblioteca",
         "emptyLibrary": "Sin listas de reproducción",
         "tapToAdd": "Toca una etiqueta Pebbble para añadir tu primera lista",
-        "settings": "Configuración"
+        "settings": "Configuración",
+        "newTagDetected": "¡Nueva piedra mágica detectada!",
+        "addToCollection": "Añadir a la colección",
+        "tagDetected": "Lista para reproducir",
+        "playNow": "Reproducir ahora"
+    },
+    "miniPlayer": {
+        "nowPlaying": "Reproduciendo",
+        "swipeHint": "Desliza para cambiar pista"
     },
     "nfc": {
         "activate": "Activar NFC",

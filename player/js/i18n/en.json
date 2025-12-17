@@ -8,7 +8,15 @@
         "library": "Your Library",
         "emptyLibrary": "No playlists yet",
         "tapToAdd": "Tap a Pebbble tag to add your first playlist",
-        "settings": "Settings"
+        "settings": "Settings",
+        "newTagDetected": "New magic stone detected!",
+        "addToCollection": "Add to collection",
+        "tagDetected": "Ready to play",
+        "playNow": "Play now"
+    },
+    "miniPlayer": {
+        "nowPlaying": "Now playing",
+        "swipeHint": "Swipe to change track"
     },
     "nfc": {
         "activate": "Activate NFC",

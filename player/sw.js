@@ -3,7 +3,7 @@
  * Caches app shell for offline use
  */
 
-const CACHE_NAME = 'pebbble-v10';
+const CACHE_NAME = 'pebbble-v11';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -23,6 +23,8 @@ const STATIC_ASSETS = [
     '/js/components/PebbblePlayer.js',
     '/js/components/HomeScreen.js',
     '/js/components/SettingsPanel.js',
+    '/js/components/PlayerSheet.js',
+    '/js/components/MiniPlayer.js',
     '/js/components/MagicStoneWelcome.js',
     '/js/components/DeviceModeSelector.js',
     '/js/components/PlaylistView.js',

@@ -8,7 +8,15 @@
         "library": "Ta bibliothèque",
         "emptyLibrary": "Aucune playlist",
         "tapToAdd": "Scanne un Pebbble pour ajouter ta première playlist",
-        "settings": "Paramètres"
+        "settings": "Paramètres",
+        "newTagDetected": "Nouvelle pierre magique détectée !",
+        "addToCollection": "Ajouter à la collection",
+        "tagDetected": "Prêt à écouter",
+        "playNow": "Écouter maintenant"
+    },
+    "miniPlayer": {
+        "nowPlaying": "En cours",
+        "swipeHint": "Glisse pour changer de piste"
     },
     "nfc": {
         "activate": "Activer NFC",
