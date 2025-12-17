@@ -45,10 +45,14 @@ class PebbblePlayer extends HTMLElement {
         this.render();
         console.log('🎮 PebbblePlayer rendered');
         this.setupEventListeners();
-        this.checkUrlParams();
 
-        // Check for cached playlists (owned device flow)
-        await this.checkCachedContent();
+        // Check URL params first - if handled, don't check cached content
+        const urlHandled = this.checkUrlParams();
+
+        if (!urlHandled) {
+            // Check for cached playlists (owned device flow)
+            await this.checkCachedContent();
+        }
     }
 
     /**
@@ -81,10 +85,11 @@ class PebbblePlayer extends HTMLElement {
      * Check for URL parameters
      * - Debug mode: #playlistHash=Qm...&serial=04:2D:B7:1A:E7:1C:90
      * - NFC launch: #playlistHash=Qm... (need to scan for serial)
+     * @returns {boolean} true if URL was fully handled (debug mode), false otherwise
      */
     checkUrlParams() {
         const hash = window.location.hash.slice(1);
-        if (!hash) return;
+        if (!hash) return false;
 
         const params = new URLSearchParams(hash);
         const playlistHash = params.get('playlistHash');
@@ -100,6 +105,7 @@ class PebbblePlayer extends HTMLElement {
                 serial,
                 url: `https://play.pebbble.app/#playlistHash=${playlistHash}`
             });
+            return true; // URL fully handled
         } else if (playlistHash) {
             // App launched via NFC tag - we have the hash but need to scan for serial
             console.log('📱 Launched via NFC URL, need to scan for serial');
@@ -108,6 +114,7 @@ class PebbblePlayer extends HTMLElement {
             // Store the playlistHash for later use when we get the serial
             this.pendingPlaylistHash = playlistHash;
         }
+        return false; // Still need to show NFC prompt or cached content
     }
 
     disconnectedCallback() {
