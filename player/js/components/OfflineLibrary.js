@@ -33,6 +33,14 @@ class OfflineLibrary extends HTMLElement {
                 this.render();
             })
         );
+
+        // Refresh when a new playlist is loaded/saved
+        this.unsubscribers.push(
+            eventBus.on(Events.PLAYLIST_LOADED, async () => {
+                await this.loadPlaylists();
+                this.render();
+            })
+        );
     }
 
     disconnectedCallback() {
