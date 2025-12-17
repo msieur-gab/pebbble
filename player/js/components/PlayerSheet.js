@@ -239,7 +239,7 @@ class PlayerSheet extends HTMLElement {
                     bottom: 0;
                     left: 0;
                     right: 0;
-                    background: var(--color-surface, #1a1a1a);
+                    background: #121212;
                     border-radius: 16px 16px 0 0;
                     transform: translateY(100%);
                     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -247,7 +247,7 @@ class PlayerSheet extends HTMLElement {
                     height: 95vh;
                     overflow: hidden;
                     pointer-events: auto;
-                    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+                    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
                 }
 
                 .player-sheet.visible {
@@ -387,14 +387,11 @@ class PlayerSheet extends HTMLElement {
 
                     <header class="header">
                         <h1 class="header__title">${t('player.playlist')}</h1>
-                        <div class="header__actions">
-                            <button class="collapse-btn" aria-label="Collapse">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-                                </svg>
-                            </button>
-                            <language-selector></language-selector>
-                        </div>
+                        <button class="collapse-btn" aria-label="Collapse">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                            </svg>
+                        </button>
                     </header>
 
                     <div class="visualization">

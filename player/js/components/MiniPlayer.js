@@ -203,7 +203,7 @@ class MiniPlayer extends HTMLElement {
                     align-items: center;
                     padding: 0 1rem;
                     gap: 0.75rem;
-                    background: var(--color-surface, #1a1a1a);
+                    background: #121212;
                 }
 
                 .mini-player__content {
