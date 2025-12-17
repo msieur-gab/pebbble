@@ -19,6 +19,7 @@ class AudioService {
         this.repeatMode = RepeatMode.OFF;
         this.isPlaying = false;
         this.wakeLock = null;
+        this.unlocked = false;
 
         // Bind methods for event listeners
         this.handleTimeUpdate = this.handleTimeUpdate.bind(this);
@@ -48,6 +49,30 @@ class AudioService {
 
         // Set up Media Session API if available
         this.setupMediaSession();
+
+        // Listen for user interaction to unlock audio
+        eventBus.on(Events.NFC_ACTIVATED, () => this.unlock());
+        eventBus.on(Events.WELCOME_COMPLETE, () => this.unlock());
+    }
+
+    /**
+     * Unlock audio playback (call on user interaction)
+     * Browsers require user gesture before allowing audio.play()
+     */
+    unlock() {
+        if (this.unlocked) return;
+
+        // Play and immediately pause to unlock
+        this.audio.play()
+            .then(() => {
+                this.audio.pause();
+                this.audio.currentTime = 0;
+                this.unlocked = true;
+                console.log('🔊 Audio unlocked');
+            })
+            .catch(() => {
+                // Silent fail - will try again on actual play
+            });
     }
 
     /**

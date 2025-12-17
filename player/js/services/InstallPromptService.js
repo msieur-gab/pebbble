@@ -11,17 +11,27 @@ class InstallPromptService {
     }
 
     init() {
-        if (this.isStandalone()) return;
+        console.log('[InstallPrompt] Initializing...');
+        console.log('[InstallPrompt] Standalone:', this.isStandalone());
+        console.log('[InstallPrompt] iOS:', this.isIOS());
+
+        if (this.isStandalone()) {
+            console.log('[InstallPrompt] Already installed, skipping');
+            return;
+        }
 
         const dismissed = localStorage.getItem('pebbble-install-dismissed');
         if (dismissed) {
             const daysSince = (Date.now() - parseInt(dismissed, 10)) / (1000 * 60 * 60 * 24);
+            console.log('[InstallPrompt] Dismissed', daysSince.toFixed(1), 'days ago');
             if (daysSince < 7) return;
         }
 
         if (this.isIOS()) {
+            console.log('[InstallPrompt] Showing iOS prompt in 3s...');
             this.showIOSPrompt();
         } else {
+            console.log('[InstallPrompt] Setting up Android prompt listener...');
             this.setupAndroidPrompt();
         }
     }
