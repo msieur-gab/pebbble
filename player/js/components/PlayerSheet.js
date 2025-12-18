@@ -245,11 +245,17 @@ class PlayerSheet extends LitElement {
     expand() {
         this.isExpanded = true;
         document.body.style.overflow = 'hidden';
+        // Clear any inline transform from dragging
+        const sheet = this.shadowRoot?.querySelector('.player-sheet');
+        if (sheet) sheet.style.transform = '';
     }
 
     collapse() {
         this.isExpanded = false;
         document.body.style.overflow = '';
+        // Clear any inline transform from dragging
+        const sheet = this.shadowRoot?.querySelector('.player-sheet');
+        if (sheet) sheet.style.transform = '';
     }
 
     handleDragStart(e) {
@@ -292,6 +298,8 @@ class PlayerSheet extends LitElement {
 
         if (sheet) {
             sheet.style.transition = '';
+            // Clear inline transform so CSS classes take effect
+            sheet.style.transform = '';
             const threshold = 100;
 
             if (this.isExpanded && deltaY > threshold) {
