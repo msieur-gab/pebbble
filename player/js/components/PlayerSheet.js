@@ -333,7 +333,10 @@ class PlayerSheet extends LitElement {
 
                         <header class="header">
                             <h1 class="header__title">${t('player.playlist')}</h1>
-                            <button class="collapse-btn" aria-label="Collapse" @click=${this.collapse}>
+                            <button class="collapse-btn" aria-label="Collapse"
+                                    @click=${() => this.collapse()}
+                                    @touchstart=${(e) => e.stopPropagation()}
+                                    @touchend=${(e) => { e.stopPropagation(); e.preventDefault(); this.collapse(); }}>
                                 ${unsafeHTML(ICON_CHEVRON_DOWN)}
                             </button>
                         </header>
