@@ -11,22 +11,20 @@ class TapeCanvas extends LitElement {
     static styles = css`
         :host {
             display: block;
-            margin: 0.5rem 0;
-            flex-shrink: 0;
-        }
-
-        .canvas-container {
             width: 100%;
-            min-width: 240px;
-            aspect-ratio: 2/1;
-            max-height: 120px;
-            margin: 0 auto;
+            height: 120px;
         }
 
         canvas {
             display: block;
+            width: 100%;
+            height: 100%;
         }
     `;
+
+    // Fixed canvas dimensions for consistent rendering
+    static CANVAS_WIDTH = 300;
+    static CANVAS_HEIGHT = 120;
 
     constructor() {
         super();
@@ -43,8 +41,8 @@ class TapeCanvas extends LitElement {
 
         this.physics = {
             hubRadius: 18,
-            maxRadius: 55,
-            distance: 65
+            maxRadius: 50,
+            distance: 60
         };
 
         this.state = {
@@ -57,9 +55,17 @@ class TapeCanvas extends LitElement {
         };
 
         this.unsubscribers = [];
-        this.handleResize = this.resize.bind(this);
-        this.handleVisibilityChange = this.onVisibilityChange.bind(this);
-        this.isVisible = false;
+    }
+
+    firstUpdated() {
+        this.canvas = this.shadowRoot.querySelector('canvas');
+        if (this.canvas) {
+            // Use fixed internal dimensions, CSS handles display scaling
+            this.canvas.width = TapeCanvas.CANVAS_WIDTH;
+            this.canvas.height = TapeCanvas.CANVAS_HEIGHT;
+            this.ctx = this.canvas.getContext('2d');
+            this.startAnimation();
+        }
     }
 
     connectedCallback() {
@@ -73,50 +79,13 @@ class TapeCanvas extends LitElement {
             this.state.progress = state.currentTime / state.duration;
         }
 
-        this.updateComplete.then(() => {
-            this.setupCanvas();
-        });
         this.setupEventListeners();
-        document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
         this.stopAnimation();
-        window.removeEventListener('resize', this.handleResize);
-        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-    }
-
-    onVisibilityChange() {
-        if (document.hidden) {
-            this.stopAnimation();
-        } else if (this.isVisible) {
-            this.startAnimation();
-        }
-    }
-
-    setupCanvas() {
-        this.canvas = this.shadowRoot.getElementById('tape-canvas');
-        if (!this.canvas) return;
-        this.ctx = this.canvas.getContext('2d');
-        this.resize();
-        window.addEventListener('resize', this.handleResize);
-    }
-
-    resize() {
-        const container = this.shadowRoot.querySelector('.canvas-container');
-        if (!container || !this.canvas) return;
-
-        const rect = container.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-
-        this.canvas.width = rect.width * dpr;
-        this.canvas.height = rect.height * dpr;
-        this.canvas.style.width = `${rect.width}px`;
-        this.canvas.style.height = `${rect.height}px`;
-
-        this.ctx.scale(dpr, dpr);
     }
 
     setupEventListeners() {
@@ -151,17 +120,12 @@ class TapeCanvas extends LitElement {
 
         this.unsubscribers.push(
             eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
-                this.isVisible = true;
-                setTimeout(() => {
-                    this.resize();
-                    this.startAnimation();
-                }, 50);
+                this.startAnimation();
             })
         );
 
         this.unsubscribers.push(
             eventBus.on(Events.PLAYER_SHEET_COLLAPSE, () => {
-                this.isVisible = false;
                 this.stopAnimation();
             })
         );
@@ -207,8 +171,8 @@ class TapeCanvas extends LitElement {
     draw() {
         if (!this.canvas || !this.ctx) return;
 
-        const width = this.canvas.width / (window.devicePixelRatio || 1);
-        const height = this.canvas.height / (window.devicePixelRatio || 1);
+        const width = TapeCanvas.CANVAS_WIDTH;
+        const height = TapeCanvas.CANVAS_HEIGHT;
 
         this.ctx.clearRect(0, 0, width, height);
 
@@ -282,11 +246,7 @@ class TapeCanvas extends LitElement {
     }
 
     render() {
-        return html`
-            <div class="canvas-container">
-                <canvas id="tape-canvas"></canvas>
-            </div>
-        `;
+        return html`<canvas></canvas>`;
     }
 }
 

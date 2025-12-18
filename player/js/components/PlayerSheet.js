@@ -138,7 +138,8 @@ class PlayerSheet extends LitElement {
             flex-shrink: 0;
             display: block;
             width: 100%;
-            padding: 1rem 0;
+            height: 140px;
+            padding: 0.5rem 0;
         }
 
         .now-playing {

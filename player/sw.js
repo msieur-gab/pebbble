@@ -3,7 +3,7 @@
  * Caches app shell for offline use
  */
 
-const CACHE_NAME = 'pebbble-v26';
+const CACHE_NAME = 'pebbble-v31';
 const STATIC_ASSETS = [
     './',
     './index.html',
