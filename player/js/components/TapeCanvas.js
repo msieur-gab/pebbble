@@ -24,13 +24,14 @@ class TapeCanvas extends LitElement {
 
     // Fixed canvas dimensions for consistent rendering
     static CANVAS_WIDTH = 300;
-    static CANVAS_HEIGHT = 120;
+    static CANVAS_HEIGHT = 100;
 
     constructor() {
         super();
         this.canvas = null;
         this.ctx = null;
         this.animationFrame = null;
+        this.isInitialized = false;
 
         this.colors = {
             tape: '#FF4D00',
@@ -57,19 +58,9 @@ class TapeCanvas extends LitElement {
         this.unsubscribers = [];
     }
 
-    firstUpdated() {
-        this.canvas = this.shadowRoot.querySelector('canvas');
-        if (this.canvas) {
-            // Use fixed internal dimensions, CSS handles display scaling
-            this.canvas.width = TapeCanvas.CANVAS_WIDTH;
-            this.canvas.height = TapeCanvas.CANVAS_HEIGHT;
-            this.ctx = this.canvas.getContext('2d');
-            this.startAnimation();
-        }
-    }
-
     connectedCallback() {
         super.connectedCallback();
+        console.log('🎬 TapeCanvas: connectedCallback');
 
         const state = audio.getState();
         this.state.isPlaying = state.isPlaying;
@@ -80,11 +71,68 @@ class TapeCanvas extends LitElement {
         }
 
         this.setupEventListeners();
+
+        // Force Lit to trigger initial render
+        this.requestUpdate();
+    }
+
+    async firstUpdated() {
+        console.log('🎬 TapeCanvas: firstUpdated called, shadowRoot:', !!this.shadowRoot);
+
+        // Manually create canvas if Lit render didn't work
+        if (!this.shadowRoot?.querySelector('canvas')) {
+            console.log('🎬 TapeCanvas: manually creating canvas element');
+
+            // Add styles manually
+            const style = document.createElement('style');
+            style.textContent = `
+                :host {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    width: 100%;
+                    height: 100px;
+                }
+                canvas {
+                    display: block;
+                    width: 300px;
+                    height: 100px;
+                }
+            `;
+            this.shadowRoot?.appendChild(style);
+
+            // Add canvas
+            const canvas = document.createElement('canvas');
+            this.shadowRoot?.appendChild(canvas);
+        }
+
+        // Initialize canvas after first render
+        await this.initializeCanvas();
+    }
+
+    async initializeCanvas() {
+        // Query for canvas element
+        const canvasEl = this.shadowRoot?.querySelector('canvas');
+        console.log('🎬 TapeCanvas: initializeCanvas, canvas element:', !!canvasEl);
+
+        if (canvasEl) {
+            this.canvas = canvasEl;
+            // Set internal canvas dimensions (drawing resolution)
+            // These must match the CSS display size to avoid distortion
+            this.canvas.width = TapeCanvas.CANVAS_WIDTH;
+            this.canvas.height = TapeCanvas.CANVAS_HEIGHT;
+            this.ctx = this.canvas.getContext('2d');
+            this.isInitialized = true;
+            console.log('🎬 TapeCanvas: canvas initialized successfully', TapeCanvas.CANVAS_WIDTH, 'x', TapeCanvas.CANVAS_HEIGHT);
+            return true;
+        }
+        return false;
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
+        this.unsubscribers = [];
         this.stopAnimation();
     }
 
@@ -115,12 +163,37 @@ class TapeCanvas extends LitElement {
                 this.state.rightAngle = 0;
                 this.state.currentTime = 0;
                 this.state.duration = data.track?.duration || 180;
+                this.state.progress = 0;
             })
         );
 
         this.unsubscribers.push(
             eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
-                this.startAnimation();
+                console.log('🎬 TapeCanvas: sheet expand received, isInitialized:', this.isInitialized);
+                // Stop any existing animation
+                this.stopAnimation();
+
+                // Wait for our own render to complete, then start animation
+                setTimeout(async () => {
+                    console.log('🎬 TapeCanvas: timeout fired, attempting to start animation');
+
+                    // Make sure we've rendered
+                    await this.updateComplete;
+
+                    // Try to initialize if not already done
+                    if (!this.isInitialized) {
+                        console.log('🎬 TapeCanvas: not initialized, calling initializeCanvas');
+                        await this.initializeCanvas();
+                    }
+
+                    console.log('🎬 TapeCanvas: after init - canvas:', !!this.canvas, 'ctx:', !!this.ctx);
+
+                    if (this.canvas && this.ctx) {
+                        this._runAnimation();
+                    } else {
+                        console.error('🎬 TapeCanvas: failed to initialize canvas');
+                    }
+                }, 100);
             })
         );
 
@@ -132,7 +205,27 @@ class TapeCanvas extends LitElement {
     }
 
     startAnimation() {
-        if (this.animationFrame) return; // Already running
+        if (this.animationFrame) {
+            console.log('🎬 TapeCanvas: animation already running');
+            return;
+        }
+
+        // Ensure canvas is ready
+        if (!this.canvas || !this.ctx) {
+            console.warn('🎬 TapeCanvas: canvas not ready, initializing...');
+            this.ensureCanvasReady().then((ready) => {
+                if (ready && !this.animationFrame) {
+                    this._runAnimation();
+                }
+            });
+            return;
+        }
+
+        this._runAnimation();
+    }
+
+    _runAnimation() {
+        console.log('🎬 TapeCanvas: starting animation loop');
         const animate = () => {
             this.update();
             this.draw();
@@ -246,6 +339,7 @@ class TapeCanvas extends LitElement {
     }
 
     render() {
+        console.log('🎬 TapeCanvas: render() called');
         return html`<canvas></canvas>`;
     }
 }

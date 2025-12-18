@@ -136,9 +136,11 @@ class PlayerSheet extends LitElement {
 
         .visualization {
             flex-shrink: 0;
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             width: 100%;
-            height: 140px;
+            height: 120px;
             padding: 0.5rem 0;
         }
 
@@ -210,8 +212,12 @@ class PlayerSheet extends LitElement {
             eventBus.on(Events.PLAYER_SHEET_OPEN, () => {
                 this.open();
                 this.expand();
-                // Notify canvases to start/resize
-                eventBus.emit(Events.PLAYER_SHEET_EXPAND);
+                // Wait for Lit to re-render, then notify canvases
+                // This ensures the .full-player is visible before canvas initializes
+                this.updateComplete.then(() => {
+                    console.log('🎵 PlayerSheet: emitting PLAYER_SHEET_EXPAND after render');
+                    eventBus.emit(Events.PLAYER_SHEET_EXPAND);
+                });
             })
         );
 
