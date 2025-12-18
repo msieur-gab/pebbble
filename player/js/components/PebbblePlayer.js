@@ -35,15 +35,14 @@ class PebbblePlayer extends LitElement {
     static styles = css`
         :host {
             display: block;
-            min-height: 100vh;
-            min-height: 100dvh;
+            height: 100%;
+            overflow: hidden;
         }
 
         .container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
+            height: 100%;
             padding: 1rem;
             padding-bottom: 80px;
             max-width: 480px;
