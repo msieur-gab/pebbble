@@ -12,7 +12,8 @@
         "newTagDetected": "Nouvelle pierre magique détectée !",
         "addToCollection": "Ajouter à la collection",
         "tagDetected": "Prêt à écouter",
-        "playNow": "Écouter maintenant"
+        "playNow": "Écouter maintenant",
+        "alreadyInLibrary": "Ce Pebbble est dans ta bibliothèque"
     },
     "miniPlayer": {
         "nowPlaying": "En cours",
@@ -46,7 +47,9 @@
         "nowPlaying": "En cours",
         "playlist": "Playlist",
         "track": "Piste",
-        "of": "sur"
+        "of": "sur",
+        "tapToListen": "Touche pour écouter",
+        "newPebbble": "Nouveau Pebbble détecté"
     },
     "controls": {
         "play": "Lecture",

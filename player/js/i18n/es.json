@@ -12,7 +12,8 @@
         "newTagDetected": "¡Nueva piedra mágica detectada!",
         "addToCollection": "Añadir a la colección",
         "tagDetected": "Lista para reproducir",
-        "playNow": "Reproducir ahora"
+        "playNow": "Reproducir ahora",
+        "alreadyInLibrary": "Este Pebbble está en tu biblioteca"
     },
     "miniPlayer": {
         "nowPlaying": "Reproduciendo",
@@ -46,7 +47,9 @@
         "nowPlaying": "Reproduciendo",
         "playlist": "Lista de reproducción",
         "track": "Pista",
-        "of": "de"
+        "of": "de",
+        "tapToListen": "Toca para escuchar",
+        "newPebbble": "Nuevo Pebbble detectado"
     },
     "controls": {
         "play": "Reproducir",

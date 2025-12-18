@@ -12,7 +12,8 @@
         "newTagDetected": "New magic stone detected!",
         "addToCollection": "Add to collection",
         "tagDetected": "Ready to play",
-        "playNow": "Play now"
+        "playNow": "Play now",
+        "alreadyInLibrary": "This Pebbble is in your library"
     },
     "miniPlayer": {
         "nowPlaying": "Now playing",
@@ -46,7 +47,9 @@
         "nowPlaying": "Now Playing",
         "playlist": "Playlist",
         "track": "Track",
-        "of": "of"
+        "of": "of",
+        "tapToListen": "Tap to listen",
+        "newPebbble": "New Pebbble detected"
     },
     "controls": {
         "play": "Play",

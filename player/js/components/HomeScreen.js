@@ -6,6 +6,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { storage } from '../services/StorageService.js';
 import { t } from '../services/I18nService.js';
+import { audio } from '../services/AudioService.js';
 
 class HomeScreen extends HTMLElement {
     constructor() {
@@ -82,8 +83,10 @@ class HomeScreen extends HTMLElement {
         playBtn?.addEventListener('click', () => this.handlePlayTag());
     }
 
-    handleAddTag() {
+    async handleAddTag() {
         if (this.pendingTag) {
+            // Unlock audio in user gesture context
+            await audio.unlock();
             eventBus.emit(Events.OFFLINE_PLAYLIST_SELECT, {
                 playlistHash: this.pendingTag.playlistHash,
                 serial: this.pendingTag.serial
@@ -91,8 +94,10 @@ class HomeScreen extends HTMLElement {
         }
     }
 
-    handlePlayTag() {
+    async handlePlayTag() {
         if (this.pendingTag) {
+            // Unlock audio in user gesture context
+            await audio.unlock();
             eventBus.emit(Events.OFFLINE_PLAYLIST_SELECT, {
                 playlistHash: this.pendingTag.playlistHash,
                 serial: this.pendingTag.serial

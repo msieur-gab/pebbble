@@ -12,7 +12,8 @@
         "newTagDetected": "检测到新魔法石！",
         "addToCollection": "添加到收藏",
         "tagDetected": "准备播放",
-        "playNow": "立即播放"
+        "playNow": "立即播放",
+        "alreadyInLibrary": "此 Pebbble 已在你的收藏中"
     },
     "miniPlayer": {
         "nowPlaying": "正在播放",
@@ -46,7 +47,9 @@
         "nowPlaying": "正在播放",
         "playlist": "播放列表",
         "track": "曲目",
-        "of": "/"
+        "of": "/",
+        "tapToListen": "点击收听",
+        "newPebbble": "检测到新 Pebbble"
     },
     "controls": {
         "play": "播放",

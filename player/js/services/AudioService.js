@@ -4,6 +4,10 @@
 
 import { eventBus, Events } from './EventBus.js';
 
+// Minimal silent MP3 data URI for unlocking audio playback
+// This is a valid ~176 byte silent MP3 that satisfies browser autoplay requirements
+const SILENT_MP3 = 'data:audio/mpeg;base64,//uQxAAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//uQxBkAAADSAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+
 // Repeat modes
 export const RepeatMode = {
     OFF: 'off',
@@ -58,21 +62,38 @@ class AudioService {
     /**
      * Unlock audio playback (call on user interaction)
      * Browsers require user gesture before allowing audio.play()
+     * Uses a silent MP3 to ensure the unlock works even with no source loaded
+     * @returns {Promise<boolean>} True if unlock succeeded
      */
-    unlock() {
-        if (this.unlocked) return;
+    async unlock() {
+        if (this.unlocked) return true;
 
-        // Play and immediately pause to unlock
-        this.audio.play()
-            .then(() => {
-                this.audio.pause();
-                this.audio.currentTime = 0;
-                this.unlocked = true;
-                console.log('🔊 Audio unlocked');
-            })
-            .catch(() => {
-                // Silent fail - will try again on actual play
-            });
+        // Store original source to restore after unlock
+        const originalSrc = this.audio.src;
+
+        try {
+            // Set silent audio source - this is crucial for unlock to work
+            this.audio.src = SILENT_MP3;
+
+            // Play and immediately pause to unlock
+            await this.audio.play();
+            this.audio.pause();
+            this.audio.currentTime = 0;
+            this.unlocked = true;
+            console.log('🔊 Audio unlocked');
+
+            // Restore original source (if any)
+            if (originalSrc && !originalSrc.startsWith('data:')) {
+                this.audio.src = originalSrc;
+            } else {
+                this.audio.removeAttribute('src');
+            }
+
+            return true;
+        } catch (error) {
+            console.warn('AudioService: Unlock failed', error);
+            return false;
+        }
     }
 
     /**

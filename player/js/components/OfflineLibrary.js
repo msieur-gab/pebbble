@@ -5,6 +5,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { storage } from '../services/StorageService.js';
 import { t } from '../services/I18nService.js';
+import { audio } from '../services/AudioService.js';
 
 class OfflineLibrary extends HTMLElement {
     constructor() {
@@ -60,7 +61,9 @@ class OfflineLibrary extends HTMLElement {
         });
     }
 
-    handlePlaylistClick(playlist) {
+    async handlePlaylistClick(playlist) {
+        // Unlock audio in user gesture context
+        await audio.unlock();
         // Emit event with playlist data to load it
         eventBus.emit(Events.OFFLINE_PLAYLIST_SELECT, {
             playlistHash: playlist.id,

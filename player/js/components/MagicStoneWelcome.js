@@ -5,6 +5,7 @@
 
 import { eventBus, Events } from '../services/EventBus.js';
 import { t } from '../services/I18nService.js';
+import { audio } from '../services/AudioService.js';
 
 class MagicStoneWelcome extends HTMLElement {
     constructor() {
@@ -20,7 +21,9 @@ class MagicStoneWelcome extends HTMLElement {
     setupEventListeners() {
         const continueBtn = this.shadowRoot.getElementById('continue-btn');
         if (continueBtn) {
-            continueBtn.addEventListener('click', () => {
+            continueBtn.addEventListener('click', async () => {
+                // Unlock audio FIRST - this must happen in user gesture context
+                await audio.unlock();
                 eventBus.emit(Events.WELCOME_COMPLETE);
             });
         }

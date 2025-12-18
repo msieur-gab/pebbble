@@ -18,6 +18,7 @@ const Screen = {
     HOME: 'home',
     WELCOME: 'welcome',
     DEVICE_MODE: 'device_mode',
+    TAP_TO_LISTEN: 'tap_to_listen',
     LOADING: 'loading',
     ERROR: 'error'
 };
@@ -98,13 +99,32 @@ class PebbblePlayer extends HTMLElement {
         // Check if this is a first-time user (no device mode set)
         const remembered = localStorage.getItem('pebbble-device-mode');
 
-        if (!remembered) {
+        // Check if playlist is already cached
+        const cached = await storage.getPlaylist(playlistHash);
+
+        if (cached) {
+            // Cached playlist - show toast and go to home with pending tag
+            console.log('📦 Playlist already cached');
+            this.updateState({ screen: Screen.HOME });
+            this.render();
+            eventBus.emit(Events.TAG_DETECTED, {
+                serial,
+                playlistHash,
+                isNew: false
+            });
+            eventBus.emit(Events.SHOW_TOAST, {
+                message: t('home.alreadyInLibrary'),
+                type: 'info',
+                duration: 5000
+            });
+        } else if (!remembered) {
             // First-time user - show welcome flow
             this.updateState({ screen: Screen.WELCOME });
             this.render();
         } else {
-            // Returning user - load playlist directly
-            this.loadPlaylist();
+            // Returning user, new playlist - show tap to listen
+            this.updateState({ screen: Screen.TAP_TO_LISTEN });
+            this.render();
         }
     }
 
@@ -436,6 +456,10 @@ class PebbblePlayer extends HTMLElement {
                     <device-mode-selector></device-mode-selector>
                 </div>
 
+                <div class="screen ${screen === Screen.TAP_TO_LISTEN ? 'active' : ''}" id="screen-tap">
+                    ${this.renderTapToListen()}
+                </div>
+
                 <div class="screen ${screen === Screen.LOADING ? 'active' : ''}" id="screen-loading">
                     ${this.renderLoading()}
                 </div>
@@ -445,6 +469,124 @@ class PebbblePlayer extends HTMLElement {
                 </div>
             </div>
         `;
+
+        // Setup tap handler after render
+        if (screen === Screen.TAP_TO_LISTEN) {
+            this.setupTapToListenHandler();
+        }
+    }
+
+    renderTapToListen() {
+        return `
+            <div class="tap-to-listen" id="tap-to-listen" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                flex: 1;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+            ">
+                <div class="tap-stone" style="
+                    position: relative;
+                    margin-bottom: 2rem;
+                ">
+                    <!-- Pulse rings -->
+                    <div class="pulse-ring" style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 140px;
+                        height: 140px;
+                        border-radius: 50%;
+                        border: 2px solid var(--color-accent, #FF4D00);
+                        opacity: 0;
+                        animation: pulse-ring 2s ease-out infinite;
+                    "></div>
+                    <div class="pulse-ring" style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 140px;
+                        height: 140px;
+                        border-radius: 50%;
+                        border: 2px solid var(--color-accent, #FF4D00);
+                        opacity: 0;
+                        animation: pulse-ring 2s ease-out infinite 0.5s;
+                    "></div>
+                    <div class="pulse-ring" style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 140px;
+                        height: 140px;
+                        border-radius: 50%;
+                        border: 2px solid var(--color-accent, #FF4D00);
+                        opacity: 0;
+                        animation: pulse-ring 2s ease-out infinite 1s;
+                    "></div>
+                    <!-- Stone -->
+                    <div style="
+                        width: 100px;
+                        height: 100px;
+                        background: linear-gradient(135deg, var(--color-accent, #FF4D00) 0%, #cc3d00 50%, #993000 100%);
+                        border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 30px rgba(255, 77, 0, 0.4);
+                        animation: float 3s ease-in-out infinite;
+                    "></div>
+                </div>
+                <p style="
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    color: var(--color-text-primary, #fff);
+                    margin-bottom: 0.5rem;
+                ">${t('player.tapToListen')}</p>
+                <p style="
+                    font-size: 0.9rem;
+                    color: var(--color-text-muted, #888);
+                ">${t('player.newPebbble')}</p>
+            </div>
+            <style>
+                @keyframes pulse-ring {
+                    0% {
+                        transform: translate(-50%, -50%) scale(0.5);
+                        opacity: 0.8;
+                    }
+                    100% {
+                        transform: translate(-50%, -50%) scale(1.5);
+                        opacity: 0;
+                    }
+                }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-10px); }
+                }
+            </style>
+        `;
+    }
+
+    setupTapToListenHandler() {
+        const el = this.shadowRoot?.getElementById('tap-to-listen');
+        if (!el) return;
+
+        const handler = async (e) => {
+            e.preventDefault();
+            el.removeEventListener('click', handler);
+            el.removeEventListener('touchend', handler);
+
+            // Unlock audio SYNCHRONOUSLY in gesture handler
+            await audio.unlock();
+
+            // Now proceed to load playlist
+            this.loadPlaylist();
+        };
+
+        el.addEventListener('click', handler);
+        el.addEventListener('touchend', handler, { passive: false });
     }
 
     renderLoading() {
