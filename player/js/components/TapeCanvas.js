@@ -58,6 +58,8 @@ class TapeCanvas extends LitElement {
 
         this.unsubscribers = [];
         this.handleResize = this.resize.bind(this);
+        this.handleVisibilityChange = this.onVisibilityChange.bind(this);
+        this.isVisible = false;
     }
 
     connectedCallback() {
@@ -73,18 +75,25 @@ class TapeCanvas extends LitElement {
 
         this.updateComplete.then(() => {
             this.setupCanvas();
-            this.startAnimation();
         });
         this.setupEventListeners();
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-        }
+        this.stopAnimation();
         window.removeEventListener('resize', this.handleResize);
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    }
+
+    onVisibilityChange() {
+        if (document.hidden) {
+            this.stopAnimation();
+        } else if (this.isVisible) {
+            this.startAnimation();
+        }
     }
 
     setupCanvas() {
@@ -142,18 +151,37 @@ class TapeCanvas extends LitElement {
 
         this.unsubscribers.push(
             eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
-                setTimeout(() => this.resize(), 50);
+                this.isVisible = true;
+                setTimeout(() => {
+                    this.resize();
+                    this.startAnimation();
+                }, 50);
+            })
+        );
+
+        this.unsubscribers.push(
+            eventBus.on(Events.PLAYER_SHEET_COLLAPSE, () => {
+                this.isVisible = false;
+                this.stopAnimation();
             })
         );
     }
 
     startAnimation() {
+        if (this.animationFrame) return; // Already running
         const animate = () => {
             this.update();
             this.draw();
             this.animationFrame = requestAnimationFrame(animate);
         };
         animate();
+    }
+
+    stopAnimation() {
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
     }
 
     update() {

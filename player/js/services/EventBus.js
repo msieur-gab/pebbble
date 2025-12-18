@@ -115,6 +115,7 @@ export const Events = {
     // Player sheet events
     PLAYER_SHEET_OPEN: 'player:sheetOpen',
     PLAYER_SHEET_EXPAND: 'player:sheetExpand',
+    PLAYER_SHEET_COLLAPSE: 'player:sheetCollapse',
 
     // Tag detection
     TAG_DETECTED: 'app:tagDetected'

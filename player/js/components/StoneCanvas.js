@@ -40,6 +40,8 @@ class StoneCanvas extends LitElement {
 
         this.unsubscribers = [];
         this.handleResize = this.resize.bind(this);
+        this.handleVisibilityChange = this.onVisibilityChange.bind(this);
+        this.isSheetExpanded = false;
     }
 
     connectedCallback() {
@@ -49,15 +51,23 @@ class StoneCanvas extends LitElement {
             this.startAnimation();
         });
         this.setupEventListeners();
+        document.addEventListener('visibilitychange', this.handleVisibilityChange);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-        }
+        this.stopAnimation();
         window.removeEventListener('resize', this.handleResize);
+        document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    }
+
+    onVisibilityChange() {
+        if (document.hidden || this.isSheetExpanded) {
+            this.stopAnimation();
+        } else {
+            this.startAnimation();
+        }
     }
 
     setupCanvas() {
@@ -101,14 +111,39 @@ class StoneCanvas extends LitElement {
                 this.state.progress = data.percent / 100;
             })
         );
+
+        // Pause when player sheet expands (we're behind the overlay)
+        this.unsubscribers.push(
+            eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
+                this.isSheetExpanded = true;
+                this.stopAnimation();
+            })
+        );
+
+        this.unsubscribers.push(
+            eventBus.on(Events.PLAYER_SHEET_COLLAPSE, () => {
+                this.isSheetExpanded = false;
+                if (!document.hidden) {
+                    this.startAnimation();
+                }
+            })
+        );
     }
 
     startAnimation() {
+        if (this.animationFrame) return; // Already running
         const animate = () => {
             this.draw();
             this.animationFrame = requestAnimationFrame(animate);
         };
         animate();
+    }
+
+    stopAnimation() {
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
     }
 
     draw() {

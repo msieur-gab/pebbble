@@ -209,6 +209,8 @@ class PlayerSheet extends LitElement {
             eventBus.on(Events.PLAYER_SHEET_OPEN, () => {
                 this.open();
                 this.expand();
+                // Notify canvases to start/resize
+                eventBus.emit(Events.PLAYER_SHEET_EXPAND);
             })
         );
 
@@ -256,6 +258,8 @@ class PlayerSheet extends LitElement {
         // Clear any inline transform from dragging
         const sheet = this.shadowRoot?.querySelector('.player-sheet');
         if (sheet) sheet.style.transform = '';
+        // Notify components to pause animations
+        eventBus.emit(Events.PLAYER_SHEET_COLLAPSE);
     }
 
     handleDragStart(e) {
