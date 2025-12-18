@@ -80,8 +80,13 @@ async function registerServiceWorker() {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                         // New content available
                         eventBus.emit(Events.SHOW_TOAST, {
-                            message: 'Update available! Refresh to update.',
-                            type: 'info'
+                            message: 'Update available!',
+                            type: 'info',
+                            duration: 0,
+                            action: {
+                                label: 'Refresh',
+                                callback: () => window.location.reload()
+                            }
                         });
                     }
                 });
