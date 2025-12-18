@@ -104,10 +104,12 @@ class MiniPlayer extends HTMLElement {
             this.isSwiping = true;
             e.preventDefault();
 
-            // Visual feedback - slight horizontal shift
+            // Visual feedback - responsive horizontal shift with slight elasticity
             const content = this.shadowRoot.querySelector('.mini-player__content');
             if (content) {
-                content.style.transform = `translateX(${deltaX * 0.3}px)`;
+                // Use elastic easing for natural feel
+                const elasticDelta = Math.sign(deltaX) * Math.min(Math.abs(deltaX) * 0.8, 80);
+                content.style.transform = `translateX(${elasticDelta}px)`;
                 content.style.transition = 'none';
             }
         }
@@ -118,11 +120,11 @@ class MiniPlayer extends HTMLElement {
         const deltaTime = Date.now() - this.touchStartTime;
         const velocity = Math.abs(deltaX) / deltaTime;
 
-        // Reset visual
+        // Smooth snap-back animation
         const content = this.shadowRoot.querySelector('.mini-player__content');
         if (content) {
-            content.style.transform = '';
-            content.style.transition = '';
+            content.style.transition = 'transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            content.style.transform = 'translateX(0)';
         }
 
         // Check for swipe

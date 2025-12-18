@@ -11,6 +11,7 @@ class I18nService {
         this.currentLanguage = 'en';
         this.supportedLanguages = ['en', 'fr', 'zh', 'es'];
         this.defaultLanguage = 'en';
+        this.isReady = false;
     }
 
     /**
@@ -56,6 +57,7 @@ class I18nService {
 
             this.translations = await response.json();
             this.currentLanguage = lang;
+            this.isReady = true;
 
             // Update document language
             document.documentElement.lang = lang;
@@ -101,13 +103,18 @@ class I18nService {
             if (value && typeof value === 'object' && k in value) {
                 value = value[k];
             } else {
-                console.warn(`I18nService: Missing translation for "${key}"`);
+                // Only warn if translations are loaded (avoid spam before init)
+                if (this.isReady) {
+                    console.warn(`I18nService: Missing translation for "${key}"`);
+                }
                 return key; // Return key as fallback
             }
         }
 
         if (typeof value !== 'string') {
-            console.warn(`I18nService: Translation for "${key}" is not a string`);
+            if (this.isReady) {
+                console.warn(`I18nService: Translation for "${key}" is not a string`);
+            }
             return key;
         }
 
