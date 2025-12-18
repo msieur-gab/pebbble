@@ -49,7 +49,6 @@ class SettingsPanel extends HTMLElement {
         this.isOpen = false;
         this.render();
         document.body.style.overflow = '';
-        eventBus.emit(Events.SETTINGS_CLOSE);
     }
 
     handleLanguageChange(langCode) {
