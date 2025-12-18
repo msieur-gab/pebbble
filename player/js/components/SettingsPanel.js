@@ -11,6 +11,7 @@ class SettingsPanel extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.isOpen = false;
+        this.justOpened = false;
         this.unsubscribers = [];
     }
 
@@ -41,6 +42,7 @@ class SettingsPanel extends HTMLElement {
 
     open() {
         this.isOpen = true;
+        this.justOpened = true;
         this.render();
         document.body.style.overflow = 'hidden';
     }
@@ -115,7 +117,7 @@ class SettingsPanel extends HTMLElement {
                     border-left: 1px solid var(--color-surface, #333);
                     display: flex;
                     flex-direction: column;
-                    animation: slideIn 0.3s ease-out;
+                    ${this.justOpened ? 'animation: slideIn 0.3s ease-out;' : ''}
                 }
 
                 @keyframes slideIn {
@@ -339,6 +341,9 @@ class SettingsPanel extends HTMLElement {
         this.shadowRoot.querySelectorAll('[data-mode]').forEach(btn => {
             btn.addEventListener('click', () => this.handleModeChange(btn.dataset.mode));
         });
+
+        // Reset animation flag after render
+        this.justOpened = false;
     }
 }
 

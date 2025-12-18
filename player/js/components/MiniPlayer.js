@@ -102,7 +102,10 @@ class MiniPlayer extends HTMLElement {
         // If horizontal movement exceeds threshold, it's a swipe
         if (Math.abs(deltaX) > 10) {
             this.isSwiping = true;
-            e.preventDefault();
+            // Only prevent default if the event is cancelable
+            if (e.cancelable) {
+                e.preventDefault();
+            }
 
             // Visual feedback - responsive horizontal shift with slight elasticity
             const content = this.shadowRoot.querySelector('.mini-player__content');
