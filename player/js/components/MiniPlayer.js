@@ -6,6 +6,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio } from '../services/AudioService.js';
 import { t } from '../services/I18nService.js';
+import { ICON_PLAY, ICON_PAUSE } from '../utils/icons.js';
 
 class MiniPlayer extends HTMLElement {
     constructor() {
@@ -169,7 +170,7 @@ class MiniPlayer extends HTMLElement {
     updatePlayButton() {
         const btn = this.shadowRoot.querySelector('.mini-player__play-btn');
         if (btn) {
-            btn.innerHTML = this.isPlaying ? this.getPauseIcon() : this.getPlayIcon();
+            btn.innerHTML = this.isPlaying ? ICON_PAUSE : ICON_PLAY;
         }
     }
 
@@ -178,14 +179,6 @@ class MiniPlayer extends HTMLElement {
         if (fill) {
             fill.style.width = `${this.progress}%`;
         }
-    }
-
-    getPlayIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
-    }
-
-    getPauseIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     }
 
     render() {
@@ -319,7 +312,7 @@ class MiniPlayer extends HTMLElement {
                     </div>
                 </div>
                 <button class="mini-player__play-btn" aria-label="${this.isPlaying ? t('controls.pause') : t('controls.play')}">
-                    ${this.isPlaying ? this.getPauseIcon() : this.getPlayIcon()}
+                    ${this.isPlaying ? ICON_PAUSE : ICON_PLAY}
                 </button>
                 <div class="mini-player__progress">
                     <div class="mini-player__progress-fill"></div>

@@ -5,6 +5,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio, RepeatMode } from '../services/AudioService.js';
 import { t } from '../services/I18nService.js';
+import { ICON_REPEAT, ICON_REPEAT_ONE } from '../utils/icons.js';
 
 class PlaybackModes extends HTMLElement {
     constructor() {
@@ -54,23 +55,10 @@ class PlaybackModes extends HTMLElement {
 
         // Update icon based on mode
         if (this.repeatMode === RepeatMode.ONE) {
-            repeatIcon.innerHTML = this.getRepeatOneIcon();
+            repeatIcon.innerHTML = ICON_REPEAT_ONE;
         } else {
-            repeatIcon.innerHTML = this.getRepeatIcon();
+            repeatIcon.innerHTML = ICON_REPEAT;
         }
-    }
-
-    getRepeatIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
-        </svg>`;
-    }
-
-    getRepeatOneIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
-            <text x="12" y="14" font-size="8" text-anchor="middle" font-weight="bold">1</text>
-        </svg>`;
     }
 
     render() {
@@ -125,7 +113,7 @@ class PlaybackModes extends HTMLElement {
                     id="repeat-btn"
                     title="${this.getRepeatTitle()}">
                 <span class="mode-icon" id="repeat-icon">
-                    ${this.repeatMode === RepeatMode.ONE ? this.getRepeatOneIcon() : this.getRepeatIcon()}
+                    ${this.repeatMode === RepeatMode.ONE ? ICON_REPEAT_ONE : ICON_REPEAT}
                 </span>
             </button>
         `;

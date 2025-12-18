@@ -6,6 +6,7 @@ import { eventBus, Events } from '../services/EventBus.js';
 import { storage } from '../services/StorageService.js';
 import { t } from '../services/I18nService.js';
 import { audio } from '../services/AudioService.js';
+import { ICON_DELETE } from '../utils/icons.js';
 
 class OfflineLibrary extends HTMLElement {
     constructor() {
@@ -253,9 +254,7 @@ class OfflineLibrary extends HTMLElement {
                 </div>
                 <div class="playlist-actions">
                     <button class="delete-btn" title="Delete">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                        </svg>
+                        ${ICON_DELETE}
                     </button>
                 </div>
             </div>

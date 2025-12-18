@@ -7,6 +7,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio } from '../services/AudioService.js';
 import { t } from '../services/I18nService.js';
+import { ICON_CHEVRON_DOWN } from '../utils/icons.js';
 import './MiniPlayer.js';
 
 class PlayerSheet extends HTMLElement {
@@ -400,9 +401,7 @@ class PlayerSheet extends HTMLElement {
                         <header class="header">
                             <h1 class="header__title">${t('player.playlist')}</h1>
                             <button class="collapse-btn" aria-label="Collapse">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-                                </svg>
+                                ${ICON_CHEVRON_DOWN}
                             </button>
                         </header>
 

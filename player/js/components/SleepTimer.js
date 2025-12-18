@@ -5,6 +5,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio } from '../services/AudioService.js';
 import { t } from '../services/I18nService.js';
+import { formatTime } from '../utils/formatters.js';
 
 // Module-level state to persist across re-renders
 let timerState = {
@@ -157,7 +158,7 @@ class SleepTimer extends HTMLElement {
 
             eventBus.emit(Events.TIMER_TICK, {
                 remaining: remaining,
-                formatted: this.formatTime(remaining)
+                formatted: formatTime(remaining)
             });
 
             // Update the active instance's display
@@ -202,14 +203,8 @@ class SleepTimer extends HTMLElement {
             const remaining = timerState.isPaused
                 ? timerState.pausedRemaining
                 : timerState.remainingSeconds;
-            display.textContent = this.formatTime(remaining);
+            display.textContent = formatTime(remaining);
         }
-    }
-
-    formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     render() {
@@ -339,7 +334,7 @@ class SleepTimer extends HTMLElement {
 
             <button class="timer-trigger" id="timer-trigger" title="${t('timer.title')}">
                 <span class="timer-icon">⏱️</span>
-                ${isActive ? `<span class="timer-display" id="timer-display">${this.formatTime(this.remainingSeconds)}</span>` : ''}
+                ${isActive ? `<span class="timer-display" id="timer-display">${formatTime(this.remainingSeconds)}</span>` : ''}
             </button>
 
             <div class="timer-panel">

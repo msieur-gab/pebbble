@@ -4,6 +4,7 @@
 
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio } from '../services/AudioService.js';
+import { formatTime } from '../utils/formatters.js';
 
 class ProgressBar extends HTMLElement {
     constructor() {
@@ -61,20 +62,13 @@ class ProgressBar extends HTMLElement {
         }
 
         if (currentTimeEl) {
-            currentTimeEl.textContent = this.formatTime(this.currentTime);
+            currentTimeEl.textContent = formatTime(this.currentTime);
         }
 
         if (remainingTimeEl) {
             const remaining = Math.max(0, this.duration - this.currentTime);
-            remainingTimeEl.textContent = `-${this.formatTime(remaining)}`;
+            remainingTimeEl.textContent = `-${formatTime(remaining)}`;
         }
-    }
-
-    formatTime(seconds) {
-        if (!seconds || isNaN(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     handleProgressClick(event) {

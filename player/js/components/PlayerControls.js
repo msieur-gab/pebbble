@@ -5,6 +5,7 @@
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio } from '../services/AudioService.js';
 import { t } from '../services/I18nService.js';
+import { ICON_PLAY, ICON_PAUSE, ICON_PREV, ICON_NEXT } from '../utils/icons.js';
 
 class PlayerControls extends HTMLElement {
     constructor() {
@@ -47,26 +48,8 @@ class PlayerControls extends HTMLElement {
     updatePlayButton() {
         const playBtn = this.shadowRoot.getElementById('play-btn');
         if (playBtn) {
-            playBtn.innerHTML = this.isPlaying
-                ? this.getPauseIcon()
-                : this.getPlayIcon();
+            playBtn.innerHTML = this.isPlaying ? ICON_PAUSE : ICON_PLAY;
         }
-    }
-
-    getPlayIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
-    }
-
-    getPauseIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-    }
-
-    getPrevIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>`;
-    }
-
-    getNextIcon() {
-        return `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>`;
     }
 
     render() {
@@ -147,15 +130,15 @@ class PlayerControls extends HTMLElement {
 
             <div class="transport">
                 <button class="transport-btn" id="prev-btn" title="${t('controls.previous')}">
-                    ${this.getPrevIcon()}
+                    ${ICON_PREV}
                 </button>
 
                 <button class="transport-btn play-btn" id="play-btn" title="${t('controls.play')}">
-                    ${this.isPlaying ? this.getPauseIcon() : this.getPlayIcon()}
+                    ${this.isPlaying ? ICON_PAUSE : ICON_PLAY}
                 </button>
 
                 <button class="transport-btn" id="next-btn" title="${t('controls.next')}">
-                    ${this.getNextIcon()}
+                    ${ICON_NEXT}
                 </button>
             </div>
         `;
