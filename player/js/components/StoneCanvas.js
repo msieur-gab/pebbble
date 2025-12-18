@@ -21,6 +21,9 @@ class StoneCanvas extends HTMLElement {
         };
 
         this.unsubscribers = [];
+
+        // Bind handler for proper cleanup
+        this.handleResize = this.resize.bind(this);
     }
 
     connectedCallback() {
@@ -35,6 +38,7 @@ class StoneCanvas extends HTMLElement {
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
         }
+        window.removeEventListener('resize', this.handleResize);
     }
 
     setupCanvas() {
@@ -42,7 +46,7 @@ class StoneCanvas extends HTMLElement {
         this.ctx = this.canvas.getContext('2d');
         this.resize();
 
-        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('resize', this.handleResize);
     }
 
     resize() {

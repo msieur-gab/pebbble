@@ -71,18 +71,6 @@ class PebbblePlayer extends HTMLElement {
     }
 
     /**
-     * Check if a playlist is already in the user's library
-     */
-    async isInLibrary(playlistHash) {
-        try {
-            const playlists = await storage.getAllPlaylists();
-            return playlists.some(p => p.id === playlistHash);
-        } catch {
-            return false;
-        }
-    }
-
-    /**
      * Handle URL-based tag loading
      */
     async handleTagUrl(params) {

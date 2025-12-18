@@ -15,18 +15,6 @@ class MagicStoneWelcome extends HTMLElement {
 
     connectedCallback() {
         this.render();
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        const continueBtn = this.shadowRoot.getElementById('continue-btn');
-        if (continueBtn) {
-            continueBtn.addEventListener('click', async () => {
-                // Unlock audio FIRST - this must happen in user gesture context
-                await audio.unlock();
-                eventBus.emit(Events.WELCOME_COMPLETE);
-            });
-        }
     }
 
     render() {
@@ -200,8 +188,14 @@ class MagicStoneWelcome extends HTMLElement {
             </button>
         `;
 
-        // Re-attach event listeners after render
-        this.setupEventListeners();
+        // Re-attach button listener after render (since innerHTML destroys it)
+        const continueBtn = this.shadowRoot.getElementById('continue-btn');
+        if (continueBtn) {
+            continueBtn.addEventListener('click', async () => {
+                await audio.unlock();
+                eventBus.emit(Events.WELCOME_COMPLETE);
+            });
+        }
     }
 }
 

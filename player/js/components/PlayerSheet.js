@@ -46,20 +46,8 @@ class PlayerSheet extends HTMLElement {
         );
 
         this.unsubscribers.push(
-            eventBus.on(Events.PLAYER_SHEET_CLOSE, () => {
-                this.close();
-            })
-        );
-
-        this.unsubscribers.push(
             eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
                 this.expand();
-            })
-        );
-
-        this.unsubscribers.push(
-            eventBus.on(Events.PLAYER_SHEET_COLLAPSE, () => {
-                this.collapse();
             })
         );
 

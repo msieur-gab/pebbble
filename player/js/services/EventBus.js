@@ -25,19 +25,6 @@ class EventBus {
     }
 
     /**
-     * Subscribe to an event (fires only once)
-     * @param {string} event - Event name
-     * @param {Function} callback - Handler function
-     */
-    once(event, callback) {
-        const wrapper = (data) => {
-            this.off(event, wrapper);
-            callback(data);
-        };
-        this.on(event, wrapper);
-    }
-
-    /**
      * Unsubscribe from an event
      * @param {string} event - Event name
      * @param {Function} callback - Handler function to remove
@@ -120,22 +107,14 @@ export const Events = {
     LANGUAGE_CHANGE: 'i18n:languageChange',
 
     // UI events
-    SHOW_SETTINGS: 'ui:showSettings',
-    HIDE_SETTINGS: 'ui:hideSettings',
     SHOW_TOAST: 'ui:showToast',
 
     // Settings panel events
     SETTINGS_OPEN: 'settings:open',
-    SETTINGS_CLOSE: 'settings:close',
-
-    // Home screen events
-    HOME_LOADED: 'home:loaded',
 
     // Player sheet events
     PLAYER_SHEET_OPEN: 'player:sheetOpen',
-    PLAYER_SHEET_CLOSE: 'player:sheetClose',
     PLAYER_SHEET_EXPAND: 'player:sheetExpand',
-    PLAYER_SHEET_COLLAPSE: 'player:sheetCollapse',
 
     // Tag detection
     TAG_DETECTED: 'app:tagDetected'

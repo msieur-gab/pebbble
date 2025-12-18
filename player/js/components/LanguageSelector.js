@@ -13,6 +13,16 @@ class LanguageSelector extends HTMLElement {
         this.isOpen = false;
         this.currentLang = 'en';
         this.unsubscribers = [];
+
+        // Bind handler for proper cleanup
+        this.handleDocumentClick = this.handleDocumentClick.bind(this);
+    }
+
+    handleDocumentClick(e) {
+        if (!this.contains(e.target) && this.isOpen) {
+            this.isOpen = false;
+            this.render();
+        }
     }
 
     connectedCallback() {
@@ -23,6 +33,7 @@ class LanguageSelector extends HTMLElement {
 
     disconnectedCallback() {
         this.unsubscribers.forEach(unsub => unsub());
+        document.removeEventListener('click', this.handleDocumentClick);
     }
 
     setupEventListeners() {
@@ -34,12 +45,7 @@ class LanguageSelector extends HTMLElement {
         );
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!this.contains(e.target) && this.isOpen) {
-                this.isOpen = false;
-                this.render();
-            }
-        });
+        document.addEventListener('click', this.handleDocumentClick);
     }
 
     toggleDropdown() {

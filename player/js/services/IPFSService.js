@@ -81,52 +81,6 @@ class IPFSService {
     }
 
     /**
-     * Download all messages in a playlist
-     * @param {Object} manifest - Playlist manifest
-     * @param {Function} [onProgress] - Progress callback (index, total)
-     * @returns {Promise<Array>} Array of encrypted message packages
-     */
-    async downloadAllMessages(manifest, onProgress) {
-        const messages = manifest.messages || [];
-        const packages = [];
-
-        for (let i = 0; i < messages.length; i++) {
-            const message = messages[i];
-
-            eventBus.emit(Events.DOWNLOAD_PROGRESS, {
-                stage: 'messages',
-                current: i + 1,
-                total: messages.length,
-                progress: Math.round(((i + 1) / messages.length) * 100)
-            });
-
-            if (onProgress) {
-                onProgress(i + 1, messages.length);
-            }
-
-            try {
-                const pkg = await this.downloadMessage(message.ipfsHash);
-                packages.push({
-                    ...pkg,
-                    // Merge manifest metadata
-                    messageId: message.messageId,
-                    availableFrom: message.availableFrom,
-                    availableTo: message.availableTo
-                });
-            } catch (error) {
-                console.error(`IPFSService: Failed to download message ${message.messageId}`, error);
-                // Continue with other messages
-                packages.push({
-                    messageId: message.messageId,
-                    error: error.message
-                });
-            }
-        }
-
-        return packages;
-    }
-
-    /**
      * Fetch with timeout
      * @param {string} url - URL to fetch
      * @returns {Promise<Response>}
@@ -155,24 +109,6 @@ class IPFSService {
                     reject(error);
                 });
         });
-    }
-
-    /**
-     * Set custom timeout
-     * @param {number} ms - Timeout in milliseconds
-     */
-    setTimeout(ms) {
-        this.timeout = ms;
-    }
-
-    /**
-     * Add a custom gateway
-     * @param {string} gateway - Gateway URL (with trailing slash)
-     */
-    addGateway(gateway) {
-        if (!this.gateways.includes(gateway)) {
-            this.gateways.unshift(gateway); // Prioritize custom gateways
-        }
     }
 }
 

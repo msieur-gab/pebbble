@@ -1,7 +1,4 @@
 {
-    "app": {
-        "name": "Pebbble 播放器"
-    },
     "home": {
         "welcome": "欢迎使用 Pebbble",
         "welcomeBack": "欢迎回来！",
@@ -19,12 +16,6 @@
         "nowPlaying": "正在播放",
         "swipeHint": "滑动切换曲目"
     },
-    "nfc": {
-        "activate": "启用 NFC",
-        "scanning": "请将魔法石靠近...",
-        "notSupported": "此设备不支持 NFC",
-        "error": "无法读取魔法石"
-    },
     "welcome": {
         "title": "你有一块魔法石！",
         "subtitle": "你的 Pebbble 里有专属于你的特别消息",
@@ -40,14 +31,11 @@
         "shared": {
             "label": "共享设备",
             "description": "消息不会被保存"
-        },
-        "remember": "记住我的选择"
+        }
     },
     "player": {
         "nowPlaying": "正在播放",
         "playlist": "播放列表",
-        "track": "曲目",
-        "of": "/",
         "tapToListen": "点击收听",
         "newPebbble": "检测到新 Pebbble"
     },
@@ -63,13 +51,9 @@
     "timer": {
         "title": "睡眠定时器",
         "off": "关闭",
-        "minutes": "{n} 分钟",
-        "custom": "自定义",
-        "remaining": "剩余 {time}",
         "setTimer": "设置定时器"
     },
     "dateLock": {
-        "locked": "已锁定",
         "availableIn": "{days} 天后可用",
         "availableOn": "{date} 可用",
         "availableUntil": "可用至 {date}",
@@ -79,14 +63,10 @@
     "storage": {
         "downloading": "正在下载消息...",
         "decrypting": "正在解密...",
-        "ready": "准备播放",
         "cached": "已保存供离线使用",
         "error": "加载消息失败"
     },
     "errors": {
-        "nfcPermission": "请允许 NFC 访问以继续",
-        "decryptionFailed": "无法解锁此消息",
-        "networkError": "请检查网络连接",
         "unknownError": "出错了"
     },
     "settings": {
@@ -95,7 +75,6 @@
         "deviceMode": "设备模式",
         "clearData": "清除已保存的消息",
         "clearConfirm": "确定吗？这将删除所有已保存的消息。",
-        "dataCleared": "数据已清除",
-        "about": "关于 Pebbble"
+        "dataCleared": "数据已清除"
     }
 }

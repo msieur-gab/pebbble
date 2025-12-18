@@ -100,31 +100,6 @@ class DateLockService {
     }
 
     /**
-     * Filter playlist to only available tracks
-     * @param {Array} tracks - Array of track objects
-     * @returns {Object} { available, locked, expired }
-     */
-    filterPlaylist(tracks) {
-        const available = [];
-        const locked = [];
-        const expired = [];
-
-        for (const track of tracks) {
-            const { status } = this.checkAvailability(track);
-
-            if (status === LockStatus.UNLOCKED) {
-                available.push(track);
-            } else if (status === LockStatus.LOCKED) {
-                locked.push(track);
-            } else {
-                expired.push(track);
-            }
-        }
-
-        return { available, locked, expired };
-    }
-
-    /**
      * Annotate tracks with their availability status
      * @param {Array} tracks - Array of track objects
      * @returns {Array} Tracks with lockStatus added

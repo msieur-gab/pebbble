@@ -30,10 +30,6 @@ class SettingsPanel extends HTMLElement {
         );
 
         this.unsubscribers.push(
-            eventBus.on(Events.SETTINGS_CLOSE, () => this.close())
-        );
-
-        this.unsubscribers.push(
             eventBus.on(Events.LANGUAGE_CHANGE, () => {
                 if (this.isOpen) this.render();
             })

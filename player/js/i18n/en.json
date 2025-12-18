@@ -1,7 +1,4 @@
 {
-    "app": {
-        "name": "Pebbble Player"
-    },
     "home": {
         "welcome": "Welcome to Pebbble",
         "welcomeBack": "Welcome back!",
@@ -19,12 +16,6 @@
         "nowPlaying": "Now playing",
         "swipeHint": "Swipe to change track"
     },
-    "nfc": {
-        "activate": "Activate NFC",
-        "scanning": "Hold your stone close...",
-        "notSupported": "NFC is not supported on this device",
-        "error": "Failed to read the stone"
-    },
     "welcome": {
         "title": "You have a magic stone!",
         "subtitle": "Your Pebbble contains special messages just for you",
@@ -40,14 +31,11 @@
         "shared": {
             "label": "Shared Device",
             "description": "Messages will not be saved"
-        },
-        "remember": "Remember my choice"
+        }
     },
     "player": {
         "nowPlaying": "Now Playing",
         "playlist": "Playlist",
-        "track": "Track",
-        "of": "of",
         "tapToListen": "Tap to listen",
         "newPebbble": "New Pebbble detected"
     },
@@ -63,13 +51,9 @@
     "timer": {
         "title": "Sleep Timer",
         "off": "Off",
-        "minutes": "{n} min",
-        "custom": "Custom",
-        "remaining": "{time} remaining",
         "setTimer": "Set Timer"
     },
     "dateLock": {
-        "locked": "Locked",
         "availableIn": "Available in {days} days",
         "availableOn": "Available on {date}",
         "availableUntil": "Available until {date}",
@@ -79,14 +63,10 @@
     "storage": {
         "downloading": "Downloading messages...",
         "decrypting": "Decrypting...",
-        "ready": "Ready to play",
         "cached": "Saved for offline",
         "error": "Failed to load messages"
     },
     "errors": {
-        "nfcPermission": "Please allow NFC access to continue",
-        "decryptionFailed": "Could not unlock this message",
-        "networkError": "Please check your connection",
         "unknownError": "Something went wrong"
     },
     "settings": {
@@ -95,7 +75,6 @@
         "deviceMode": "Device Mode",
         "clearData": "Clear saved messages",
         "clearConfirm": "Are you sure? This will remove all saved messages.",
-        "dataCleared": "All data cleared",
-        "about": "About Pebbble"
+        "dataCleared": "All data cleared"
     }
 }

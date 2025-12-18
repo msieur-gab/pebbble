@@ -1,7 +1,4 @@
 {
-    "app": {
-        "name": "Pebbble Player"
-    },
     "home": {
         "welcome": "Bienvenido a Pebbble",
         "welcomeBack": "¡Bienvenido de nuevo!",
@@ -19,12 +16,6 @@
         "nowPlaying": "Reproduciendo",
         "swipeHint": "Desliza para cambiar pista"
     },
-    "nfc": {
-        "activate": "Activar NFC",
-        "scanning": "Acerca tu piedra...",
-        "notSupported": "NFC no es compatible con este dispositivo",
-        "error": "No se pudo leer la piedra"
-    },
     "welcome": {
         "title": "¡Tienes una piedra mágica!",
         "subtitle": "Tu Pebbble contiene mensajes especiales solo para ti",
@@ -40,14 +31,11 @@
         "shared": {
             "label": "Dispositivo compartido",
             "description": "Los mensajes no se guardarán"
-        },
-        "remember": "Recordar mi elección"
+        }
     },
     "player": {
         "nowPlaying": "Reproduciendo",
         "playlist": "Lista de reproducción",
-        "track": "Pista",
-        "of": "de",
         "tapToListen": "Toca para escuchar",
         "newPebbble": "Nuevo Pebbble detectado"
     },
@@ -63,13 +51,9 @@
     "timer": {
         "title": "Temporizador de sueño",
         "off": "Desactivado",
-        "minutes": "{n} min",
-        "custom": "Personalizado",
-        "remaining": "{time} restante",
         "setTimer": "Establecer temporizador"
     },
     "dateLock": {
-        "locked": "Bloqueado",
         "availableIn": "Disponible en {days} días",
         "availableOn": "Disponible el {date}",
         "availableUntil": "Disponible hasta {date}",
@@ -79,14 +63,10 @@
     "storage": {
         "downloading": "Descargando mensajes...",
         "decrypting": "Descifrando...",
-        "ready": "Listo para reproducir",
         "cached": "Guardado sin conexión",
         "error": "Error al cargar mensajes"
     },
     "errors": {
-        "nfcPermission": "Por favor permite el acceso NFC para continuar",
-        "decryptionFailed": "No se pudo desbloquear este mensaje",
-        "networkError": "Por favor verifica tu conexión",
         "unknownError": "Algo salió mal"
     },
     "settings": {
@@ -95,7 +75,6 @@
         "deviceMode": "Modo de dispositivo",
         "clearData": "Borrar mensajes guardados",
         "clearConfirm": "¿Estás seguro? Esto eliminará todos los mensajes guardados.",
-        "dataCleared": "Datos borrados",
-        "about": "Acerca de Pebbble"
+        "dataCleared": "Datos borrados"
     }
 }

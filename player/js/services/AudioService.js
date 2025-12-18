@@ -206,25 +206,6 @@ class AudioService {
     }
 
     /**
-     * Toggle play/pause
-     */
-    toggle() {
-        if (this.isPlaying) {
-            this.pause();
-        } else {
-            this.play();
-        }
-    }
-
-    /**
-     * Stop playback and reset
-     */
-    stop() {
-        this.pause();
-        this.audio.currentTime = 0;
-    }
-
-    /**
      * Seek to position
      * @param {number} time - Time in seconds
      */
@@ -253,7 +234,8 @@ class AudioService {
                 nextIndex = 0;
             } else {
                 // End of playlist
-                this.stop();
+                this.pause();
+                this.audio.currentTime = 0;
                 eventBus.emit(Events.ENDED, { reason: 'playlist_end' });
                 return;
             }
@@ -368,24 +350,6 @@ class AudioService {
             repeatMode: this.repeatMode,
             playlistLength: this.playlist.length
         };
-    }
-
-    /**
-     * Set volume
-     * @param {number} volume - 0 to 1
-     */
-    setVolume(volume) {
-        if (this.audio) {
-            this.audio.volume = Math.max(0, Math.min(1, volume));
-        }
-    }
-
-    /**
-     * Get volume
-     * @returns {number}
-     */
-    getVolume() {
-        return this.audio?.volume || 1;
     }
 
     /**

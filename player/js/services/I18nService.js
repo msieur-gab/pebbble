@@ -119,17 +119,17 @@ class I18nService {
         }
 
         // Interpolate parameters
-        return this.interpolate(value, params);
+        return this.#interpolate(value, params);
     }
 
     /**
-     * Interpolate parameters into a string
+     * Interpolate parameters into a string (internal)
      * Supports {param} syntax
      * @param {string} str - String with placeholders
      * @param {Object} params - Parameters to interpolate
      * @returns {string} Interpolated string
      */
-    interpolate(str, params) {
+    #interpolate(str, params) {
         return str.replace(/\{(\w+)\}/g, (match, key) => {
             return key in params ? params[key] : match;
         });

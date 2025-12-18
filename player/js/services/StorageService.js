@@ -150,18 +150,6 @@ class StorageService {
     }
 
     /**
-     * Check if audio exists
-     * @param {string} id - Track ID
-     * @returns {Promise<boolean>}
-     */
-    async hasAudio(id) {
-        if (!this.isAvailable()) return false;
-
-        const record = await this.get(STORES.AUDIO, id);
-        return record !== undefined;
-    }
-
-    /**
      * Get all audio for a playlist (works regardless of device mode)
      * @param {string} playlistId - Playlist ID
      * @returns {Promise<Array>}
@@ -170,16 +158,6 @@ class StorageService {
         if (!this.db) return [];
 
         return this.getAllByIndex(STORES.AUDIO, 'playlistId', playlistId);
-    }
-
-    /**
-     * Delete audio
-     * @param {string} id - Track ID
-     */
-    async deleteAudio(id) {
-        if (!this.isAvailable()) return;
-
-        await this.delete(STORES.AUDIO, id);
     }
 
     // ==========================================
@@ -403,22 +381,6 @@ class StorageService {
                 req.onerror = () => reject(req.error);
             })
         ]);
-    }
-
-    /**
-     * Delete the entire database
-     */
-    async deleteDatabase() {
-        if (this.db) {
-            this.db.close();
-            this.db = null;
-        }
-
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.deleteDatabase(DB_NAME);
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => resolve();
-        });
     }
 }
 
