@@ -158,7 +158,7 @@ class MiniPlayer extends HTMLElement {
 
     handlePlayPause(e) {
         e.stopPropagation();
-        audio.toggle();
+        audio.isPlaying ? audio.pause() : audio.play();
     }
 
     handleExpand() {

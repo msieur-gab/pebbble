@@ -148,7 +148,7 @@ class PlayerControls extends HTMLElement {
         const prevBtn = this.shadowRoot.getElementById('prev-btn');
         const nextBtn = this.shadowRoot.getElementById('next-btn');
 
-        playBtn?.addEventListener('click', () => audio.toggle());
+        playBtn?.addEventListener('click', () => audio.isPlaying ? audio.pause() : audio.play());
         prevBtn?.addEventListener('click', () => audio.previous());
         nextBtn?.addEventListener('click', () => audio.next());
     }
