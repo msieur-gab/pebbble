@@ -90,20 +90,20 @@ class PlayerSheet extends HTMLElement {
     }
 
     removeDragHandlers() {
-        const handle = this.shadowRoot?.querySelector('.drag-handle');
-        if (handle) {
-            handle.removeEventListener('touchstart', this.boundDragStart);
-            handle.removeEventListener('touchmove', this.boundDrag);
-            handle.removeEventListener('touchend', this.boundDragEnd);
+        const dragZone = this.shadowRoot?.querySelector('.drag-zone');
+        if (dragZone) {
+            dragZone.removeEventListener('touchstart', this.boundDragStart);
+            dragZone.removeEventListener('touchmove', this.boundDrag);
+            dragZone.removeEventListener('touchend', this.boundDragEnd);
         }
     }
 
     attachDragHandlers() {
-        const handle = this.shadowRoot?.querySelector('.drag-handle');
-        if (handle) {
-            handle.addEventListener('touchstart', this.boundDragStart, { passive: false });
-            handle.addEventListener('touchmove', this.boundDrag, { passive: false });
-            handle.addEventListener('touchend', this.boundDragEnd, { passive: true });
+        const dragZone = this.shadowRoot?.querySelector('.drag-zone');
+        if (dragZone) {
+            dragZone.addEventListener('touchstart', this.boundDragStart, { passive: false });
+            dragZone.addEventListener('touchmove', this.boundDrag, { passive: false });
+            dragZone.addEventListener('touchend', this.boundDragEnd, { passive: true });
         }
     }
 
@@ -290,6 +290,16 @@ class PlayerSheet extends HTMLElement {
                     border-radius: 2px;
                 }
 
+                .drag-zone {
+                    touch-action: none;
+                    cursor: grab;
+                    flex-shrink: 0;
+                }
+
+                .drag-zone:active {
+                    cursor: grabbing;
+                }
+
                 .collapse-btn {
                     background: none;
                     border: none;
@@ -381,21 +391,24 @@ class PlayerSheet extends HTMLElement {
 
                 <!-- Full Player (expanded state) -->
                 <div class="full-player">
-                    <div class="drag-handle-container">
-                        <div class="drag-handle"></div>
-                    </div>
+                    <!-- Drag zone: swipe down anywhere in this area to collapse -->
+                    <div class="drag-zone">
+                        <div class="drag-handle-container">
+                            <div class="drag-handle"></div>
+                        </div>
 
-                    <header class="header">
-                        <h1 class="header__title">${t('player.playlist')}</h1>
-                        <button class="collapse-btn" aria-label="Collapse">
-                            <svg viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-                            </svg>
-                        </button>
-                    </header>
+                        <header class="header">
+                            <h1 class="header__title">${t('player.playlist')}</h1>
+                            <button class="collapse-btn" aria-label="Collapse">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                </svg>
+                            </button>
+                        </header>
 
-                    <div class="visualization">
-                        <tape-canvas></tape-canvas>
+                        <div class="visualization">
+                            <tape-canvas></tape-canvas>
+                        </div>
                     </div>
 
                     <div class="now-playing">
