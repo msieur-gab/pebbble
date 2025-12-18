@@ -3,7 +3,7 @@
  * Caches app shell for offline use
  */
 
-const CACHE_NAME = 'pebbble-v22';
+const CACHE_NAME = 'pebbble-v23';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -12,6 +12,8 @@ const STATIC_ASSETS = [
     './css/components.css',
     './css/animations.css',
     './js/app.js',
+    './js/utils/icons.js',
+    './js/utils/formatters.js',
     './js/services/EventBus.js',
     './js/services/I18nService.js',
     './js/services/StorageService.js',
@@ -74,6 +76,26 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(event.request)
                 .catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
+    // Cache-first for CDN assets (Lit library from esm.sh)
+    if (url.hostname === 'esm.sh') {
+        event.respondWith(
+            caches.open(CACHE_NAME).then((cache) => {
+                return cache.match(event.request).then((cached) => {
+                    if (cached) {
+                        return cached;
+                    }
+                    return fetch(event.request).then((response) => {
+                        if (response.ok) {
+                            cache.put(event.request, response.clone());
+                        }
+                        return response;
+                    });
+                });
+            })
         );
         return;
     }

@@ -5,6 +5,7 @@
  * Player is a bottom sheet overlay, not a separate screen
  */
 
+import { LitElement, html, css } from 'lit';
 import { eventBus, Events } from '../services/EventBus.js';
 import { i18n, t } from '../services/I18nService.js';
 import { storage } from '../services/StorageService.js';
@@ -13,7 +14,6 @@ import { cryptoService } from '../services/CryptoService.js';
 import { audio } from '../services/AudioService.js';
 import { dateLock } from '../services/DateLockService.js';
 
-// App screens/states (PLAYER is now a sheet overlay, not a screen)
 const Screen = {
     HOME: 'home',
     WELCOME: 'welcome',
@@ -23,37 +23,218 @@ const Screen = {
     ERROR: 'error'
 };
 
-class PebbblePlayer extends HTMLElement {
+class PebbblePlayer extends LitElement {
+    static properties = {
+        screen: { state: true },
+        nfcData: { state: true },
+        playlist: { state: true },
+        error: { state: true },
+        loadingMessage: { state: true }
+    };
+
+    static styles = css`
+        :host {
+            display: block;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            padding: 1rem;
+            padding-bottom: 80px;
+            max-width: 480px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 400px) {
+            .container {
+                padding: 1.5rem;
+                padding-bottom: 90px;
+            }
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Tap to listen screen */
+        .tap-to-listen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .tap-stone {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 2px solid var(--color-accent, #FF4D00);
+            opacity: 0;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        .pulse-ring:nth-child(2) { animation-delay: 0.5s; }
+        .pulse-ring:nth-child(3) { animation-delay: 1s; }
+
+        @keyframes pulse-ring {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+
+        .stone {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--color-accent, #FF4D00) 0%, #cc3d00 50%, #993000 100%);
+            border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 30px rgba(255, 77, 0, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .tap-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-primary, #fff);
+            margin-bottom: 0.5rem;
+        }
+
+        .tap-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-text-muted, #888);
+        }
+
+        /* Loading screen */
+        .loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+        }
+
+        .loading-stone {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--color-accent) 0%, #cc3d00 50%, #993000 100%);
+            border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 77, 0, 0.3);
+            animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 77, 0, 0.3); }
+            50% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 30px rgba(255, 77, 0, 0.5); }
+        }
+
+        .loading-text {
+            color: var(--color-text-secondary);
+        }
+
+        /* Error screen */
+        .error-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .error-stone {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #666 0%, #444 50%, #333 100%);
+            border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
+            opacity: 0.5;
+        }
+
+        .error-title {
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .error-message {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .btn--primary {
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: var(--color-accent, #FF4D00);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+    `;
+
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
-
-        this.state = {
-            screen: Screen.HOME,
-            nfcData: null,
-            playlist: [],
-            error: null,
-            loadingMessage: ''
-        };
-
+        this.screen = Screen.HOME;
+        this.nfcData = null;
+        this.playlist = [];
+        this.error = null;
+        this.loadingMessage = '';
         this.isLoading = false;
         this.unsubscribers = [];
         this.boundHashChangeHandler = this.handleHashChange.bind(this);
     }
 
     async connectedCallback() {
+        super.connectedCallback();
         console.log('🎮 PebbblePlayer connected');
-        this.render();
         this.setupEventListeners();
 
-        // Listen for URL hash changes (new tag taps while app is open)
         window.addEventListener('hashchange', this.boundHashChangeHandler);
 
-        // Check URL params - if we have both serial and playlistHash, handle tag
         const urlParams = this.parseUrlParams();
         if (urlParams) {
             this.handleTagUrl(urlParams);
         }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.unsubscribers.forEach(unsub => unsub());
+        window.removeEventListener('hashchange', this.boundHashChangeHandler);
+        dateLock.stopWatching();
     }
 
     parseUrlParams() {
@@ -70,31 +251,20 @@ class PebbblePlayer extends HTMLElement {
         return null;
     }
 
-    /**
-     * Handle URL-based tag loading
-     */
     async handleTagUrl(params) {
         const { serial, playlistHash } = params;
         console.log('🏷️ Tag detected from URL');
         console.log(`   Serial: ${serial}`);
         console.log(`   Playlist: ${playlistHash}`);
 
-        // Store tag data
-        this.updateState({
-            nfcData: { serial, playlistHash, url: window.location.href }
-        });
+        this.nfcData = { serial, playlistHash, url: window.location.href };
 
-        // Check if this is a first-time user (no device mode set)
         const remembered = localStorage.getItem('pebbble-device-mode');
-
-        // Check if playlist is already cached
         const cached = await storage.getPlaylist(playlistHash);
 
         if (cached) {
-            // Cached playlist - show toast and go to home with pending tag
             console.log('📦 Playlist already cached');
-            this.updateState({ screen: Screen.HOME });
-            this.render();
+            this.screen = Screen.HOME;
             eventBus.emit(Events.TAG_DETECTED, {
                 serial,
                 playlistHash,
@@ -106,13 +276,9 @@ class PebbblePlayer extends HTMLElement {
                 duration: 5000
             });
         } else if (!remembered) {
-            // First-time user - show welcome flow
-            this.updateState({ screen: Screen.WELCOME });
-            this.render();
+            this.screen = Screen.WELCOME;
         } else {
-            // Returning user, new playlist - show tap to listen
-            this.updateState({ screen: Screen.TAP_TO_LISTEN });
-            this.render();
+            this.screen = Screen.TAP_TO_LISTEN;
         }
     }
 
@@ -124,35 +290,25 @@ class PebbblePlayer extends HTMLElement {
         }
     }
 
-    disconnectedCallback() {
-        this.unsubscribers.forEach(unsub => unsub());
-        window.removeEventListener('hashchange', this.boundHashChangeHandler);
-        dateLock.stopWatching();
-    }
-
     setupEventListeners() {
-        // Welcome complete
         this.unsubscribers.push(
             eventBus.on(Events.WELCOME_COMPLETE, () => {
                 this.handleWelcomeComplete();
             })
         );
 
-        // Device mode set - load playlist
         this.unsubscribers.push(
             eventBus.on(Events.DEVICE_MODE_SET, () => {
                 this.loadPlaylist();
             })
         );
 
-        // Language change
         this.unsubscribers.push(
             eventBus.on(Events.LANGUAGE_CHANGE, () => {
-                this.render();
+                this.requestUpdate();
             })
         );
 
-        // Offline playlist selection (from library or tag action)
         this.unsubscribers.push(
             eventBus.on(Events.OFFLINE_PLAYLIST_SELECT, (data) => {
                 this.handleOfflinePlaylistSelect(data);
@@ -164,32 +320,31 @@ class PebbblePlayer extends HTMLElement {
         const remembered = localStorage.getItem('pebbble-device-mode');
 
         if (remembered) {
-            // User has device mode set - load playlist
             this.loadPlaylist();
         } else {
-            // First time - show device mode selector
-            this.updateState({ screen: Screen.DEVICE_MODE });
-            this.render();
+            this.screen = Screen.DEVICE_MODE;
         }
     }
 
     handleOfflinePlaylistSelect(data) {
         const { playlistHash, serial } = data;
 
-        this.updateState({
-            nfcData: {
-                serial,
-                playlistHash,
-                url: `https://play.pebbble.app/#playlistHash=${playlistHash}`
-            }
-        });
+        this.nfcData = {
+            serial,
+            playlistHash,
+            url: `https://play.pebbble.app/#playlistHash=${playlistHash}`
+        };
 
         this.loadPlaylist();
     }
 
+    async handleTapToListen() {
+        await audio.unlock();
+        this.loadPlaylist();
+    }
+
     async loadPlaylist() {
-        const { nfcData } = this.state;
-        if (!nfcData) return;
+        if (!this.nfcData) return;
 
         if (this.isLoading) {
             console.log('⚠️ Already loading, skipping duplicate call');
@@ -197,16 +352,12 @@ class PebbblePlayer extends HTMLElement {
         }
         this.isLoading = true;
 
-        // Show loading screen
-        this.updateState({
-            screen: Screen.LOADING,
-            loadingMessage: t('storage.downloading')
-        });
-        this.render();
+        this.screen = Screen.LOADING;
+        this.loadingMessage = t('storage.downloading');
 
         try {
-            const cachedPlaylist = await storage.getPlaylist(nfcData.playlistHash);
-            const cachedAudio = await storage.getPlaylistAudio(nfcData.playlistHash);
+            const cachedPlaylist = await storage.getPlaylist(this.nfcData.playlistHash);
+            const cachedAudio = await storage.getPlaylistAudio(this.nfcData.playlistHash);
 
             if (cachedPlaylist && cachedAudio.length > 0) {
                 console.log('💾 Loading from cache...');
@@ -216,10 +367,9 @@ class PebbblePlayer extends HTMLElement {
                 await this.loadFromNetwork();
             }
 
-            // Start watching for date changes
             dateLock.startWatching(() => {
-                const updated = dateLock.annotatePlaylist(this.state.playlist);
-                this.updateState({ playlist: updated });
+                const updated = dateLock.annotatePlaylist(this.playlist);
+                this.playlist = updated;
             });
 
         } catch (error) {
@@ -231,8 +381,7 @@ class PebbblePlayer extends HTMLElement {
     }
 
     async loadFromCache(cachedPlaylist, cachedAudio) {
-        this.updateState({ loadingMessage: t('storage.cached') });
-        this.render();
+        this.loadingMessage = t('storage.cached');
 
         const tracks = [];
 
@@ -258,39 +407,30 @@ class PebbblePlayer extends HTMLElement {
             });
         }
 
-        // Sort by original order
         const messageOrder = cachedPlaylist.manifest.messages?.map(m => m.messageId) || [];
         tracks.sort((a, b) => messageOrder.indexOf(a.id) - messageOrder.indexOf(b.id));
 
-        // Load into audio service
         const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
         await audio.loadPlaylist(availableTracks);
 
-        this.updateState({ playlist: tracks });
+        this.playlist = tracks;
 
-        // Update last played
-        await storage.updateLastPlayed(this.state.nfcData.playlistHash);
+        await storage.updateLastPlayed(this.nfcData.playlistHash);
 
-        // Emit playlist loaded
         eventBus.emit(Events.PLAYLIST_LOADED, { tracks, count: tracks.length });
 
-        // Go back to HOME and open player sheet
-        this.updateState({ screen: Screen.HOME });
-        this.render();
+        this.screen = Screen.HOME;
         eventBus.emit(Events.PLAYER_SHEET_OPEN);
 
-        // Auto-play
         if (availableTracks.length > 0) {
             await audio.play();
         }
     }
 
     async loadFromNetwork() {
-        const { nfcData } = this.state;
-        const manifest = await ipfs.downloadPlaylist(nfcData.playlistHash);
+        const manifest = await ipfs.downloadPlaylist(this.nfcData.playlistHash);
 
-        this.updateState({ loadingMessage: t('storage.decrypting') });
-        this.render();
+        this.loadingMessage = t('storage.decrypting');
 
         const tracks = [];
         const messages = manifest.messages || [];
@@ -307,7 +447,7 @@ class PebbblePlayer extends HTMLElement {
                     availableTo: message.availableTo
                 };
 
-                const audioBlob = await cryptoService.decryptAudioPackage(fullPkg, nfcData.serial);
+                const audioBlob = await cryptoService.decryptAudioPackage(fullPkg, this.nfcData.serial);
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const duration = await this.getAudioDuration(audioUrl);
 
@@ -327,21 +467,19 @@ class PebbblePlayer extends HTMLElement {
 
                 tracks.push(track);
 
-                // Save to storage if in personal mode
                 if (storage.isAvailable()) {
-                    await storage.saveAudio(fullPkg.messageId, nfcData.playlistHash, audioBlob, {
+                    await storage.saveAudio(fullPkg.messageId, this.nfcData.playlistHash, audioBlob, {
                         title: fullPkg.metadata?.title,
                         duration
                     });
                 }
 
-                // On first track, open player sheet and start playback
                 if (i === 0) {
                     const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
                     await audio.loadPlaylist(availableTracks);
 
-                    this.updateState({ playlist: [...tracks], screen: Screen.HOME });
-                    this.render();
+                    this.playlist = [...tracks];
+                    this.screen = Screen.HOME;
 
                     eventBus.emit(Events.PLAYLIST_LOADED, { tracks, count: messages.length });
                     eventBus.emit(Events.PLAYER_SHEET_OPEN);
@@ -350,10 +488,9 @@ class PebbblePlayer extends HTMLElement {
                         await audio.play();
                     }
                 } else {
-                    // Progressive update
                     const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
                     await audio.loadPlaylist(availableTracks);
-                    this.updateState({ playlist: [...tracks] });
+                    this.playlist = [...tracks];
                 }
 
             } catch (error) {
@@ -361,9 +498,8 @@ class PebbblePlayer extends HTMLElement {
             }
         }
 
-        // Save playlist metadata
         if (storage.isAvailable()) {
-            await storage.savePlaylist(nfcData.playlistHash, nfcData.serial, manifest);
+            await storage.savePlaylist(this.nfcData.playlistHash, this.nfcData.serial, manifest);
         }
     }
 
@@ -376,274 +512,75 @@ class PebbblePlayer extends HTMLElement {
     }
 
     showError(message) {
-        this.updateState({
-            screen: Screen.ERROR,
-            error: message
-        });
-        this.render();
-    }
-
-    updateState(newState) {
-        this.state = { ...this.state, ...newState };
-    }
-
-    render() {
-        const { screen } = this.state;
-        console.log('🎮 Rendering screen:', screen);
-
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    min-height: 100vh;
-                    min-height: 100dvh;
-                }
-
-                .container {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100vh;
-                    height: 100dvh;
-                    padding: 1rem;
-                    padding-bottom: 80px; /* Space for mini player */
-                    max-width: 480px;
-                    margin: 0 auto;
-                    box-sizing: border-box;
-                }
-
-                @media (min-width: 400px) {
-                    .container {
-                        padding: 1.5rem;
-                        padding-bottom: 90px;
-                    }
-                }
-
-                .screen {
-                    display: none;
-                    flex-direction: column;
-                    flex: 1;
-                    min-height: 0;
-                    overflow: hidden;
-                }
-
-                .screen.active {
-                    display: flex;
-                }
-            </style>
-
-            <div class="container">
-                <div class="screen ${screen === Screen.HOME ? 'active' : ''}" id="screen-home">
-                    <home-screen></home-screen>
-                </div>
-
-                <div class="screen ${screen === Screen.WELCOME ? 'active' : ''}" id="screen-welcome">
-                    <magic-stone-welcome></magic-stone-welcome>
-                </div>
-
-                <div class="screen ${screen === Screen.DEVICE_MODE ? 'active' : ''}" id="screen-device">
-                    <device-mode-selector></device-mode-selector>
-                </div>
-
-                <div class="screen ${screen === Screen.TAP_TO_LISTEN ? 'active' : ''}" id="screen-tap">
-                    ${this.renderTapToListen()}
-                </div>
-
-                <div class="screen ${screen === Screen.LOADING ? 'active' : ''}" id="screen-loading">
-                    ${this.renderLoading()}
-                </div>
-
-                <div class="screen ${screen === Screen.ERROR ? 'active' : ''}" id="screen-error">
-                    ${this.renderError()}
-                </div>
-            </div>
-        `;
-
-        // Setup tap handler after render
-        if (screen === Screen.TAP_TO_LISTEN) {
-            this.setupTapToListenHandler();
-        }
+        this.screen = Screen.ERROR;
+        this.error = message;
     }
 
     renderTapToListen() {
-        return `
-            <div class="tap-to-listen" id="tap-to-listen" style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex: 1;
-                cursor: pointer;
-                -webkit-tap-highlight-color: transparent;
-                user-select: none;
-            ">
-                <div class="tap-stone" style="
-                    position: relative;
-                    margin-bottom: 2rem;
-                ">
-                    <!-- Pulse rings -->
-                    <div class="pulse-ring" style="
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        width: 140px;
-                        height: 140px;
-                        border-radius: 50%;
-                        border: 2px solid var(--color-accent, #FF4D00);
-                        opacity: 0;
-                        animation: pulse-ring 2s ease-out infinite;
-                    "></div>
-                    <div class="pulse-ring" style="
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        width: 140px;
-                        height: 140px;
-                        border-radius: 50%;
-                        border: 2px solid var(--color-accent, #FF4D00);
-                        opacity: 0;
-                        animation: pulse-ring 2s ease-out infinite 0.5s;
-                    "></div>
-                    <div class="pulse-ring" style="
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        width: 140px;
-                        height: 140px;
-                        border-radius: 50%;
-                        border: 2px solid var(--color-accent, #FF4D00);
-                        opacity: 0;
-                        animation: pulse-ring 2s ease-out infinite 1s;
-                    "></div>
-                    <!-- Stone -->
-                    <div style="
-                        width: 100px;
-                        height: 100px;
-                        background: linear-gradient(135deg, var(--color-accent, #FF4D00) 0%, #cc3d00 50%, #993000 100%);
-                        border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 30px rgba(255, 77, 0, 0.4);
-                        animation: float 3s ease-in-out infinite;
-                    "></div>
+        return html`
+            <div class="tap-to-listen" @click=${this.handleTapToListen}>
+                <div class="tap-stone">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="stone"></div>
                 </div>
-                <p style="
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    color: var(--color-text-primary, #fff);
-                    margin-bottom: 0.5rem;
-                ">${t('player.tapToListen')}</p>
-                <p style="
-                    font-size: 0.9rem;
-                    color: var(--color-text-muted, #888);
-                ">${t('player.newPebbble')}</p>
+                <p class="tap-title">${t('player.tapToListen')}</p>
+                <p class="tap-subtitle">${t('player.newPebbble')}</p>
             </div>
-            <style>
-                @keyframes pulse-ring {
-                    0% {
-                        transform: translate(-50%, -50%) scale(0.5);
-                        opacity: 0.8;
-                    }
-                    100% {
-                        transform: translate(-50%, -50%) scale(1.5);
-                        opacity: 0;
-                    }
-                }
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-10px); }
-                }
-            </style>
         `;
     }
 
-    setupTapToListenHandler() {
-        const el = this.shadowRoot?.getElementById('tap-to-listen');
-        if (!el) return;
-
-        const handler = async (e) => {
-            e.preventDefault();
-            el.removeEventListener('click', handler);
-            el.removeEventListener('touchend', handler);
-
-            // Unlock audio SYNCHRONOUSLY in gesture handler
-            await audio.unlock();
-
-            // Now proceed to load playlist
-            this.loadPlaylist();
-        };
-
-        el.addEventListener('click', handler);
-        el.addEventListener('touchend', handler, { passive: false });
-    }
-
     renderLoading() {
-        return `
-            <div class="loading-screen" style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex: 1;
-                text-align: center;
-            ">
-                <div style="margin-bottom: 2rem;">
-                    <div style="
-                        width: 100px;
-                        height: 100px;
-                        background: linear-gradient(135deg, var(--color-accent) 0%, #cc3d00 50%, #993000 100%);
-                        border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 77, 0, 0.3);
-                        animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
-                    "></div>
-                </div>
-                <p style="color: var(--color-text-secondary);">
-                    ${this.state.loadingMessage || t('storage.downloading')}
-                </p>
+        return html`
+            <div class="loading-screen">
+                <div class="loading-stone"></div>
+                <p class="loading-text">${this.loadingMessage || t('storage.downloading')}</p>
             </div>
-            <style>
-                @keyframes float {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-10px); }
-                }
-                @keyframes glow {
-                    0%, 100% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 77, 0, 0.3); }
-                    50% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 30px rgba(255, 77, 0, 0.5); }
-                }
-            </style>
         `;
     }
 
     renderError() {
-        return `
-            <div style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                flex: 1;
-                text-align: center;
-                padding: 2rem;
-            ">
-                <div style="
-                    width: 80px;
-                    height: 80px;
-                    margin-bottom: 1.5rem;
-                    background: linear-gradient(135deg, #666 0%, #444 50%, #333 100%);
-                    border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
-                    opacity: 0.5;
-                "></div>
-                <h2 style="
-                    color: var(--color-text-primary);
-                    margin-bottom: 0.5rem;
-                ">${t('errors.unknownError')}</h2>
-                <p style="
-                    color: var(--color-text-secondary);
-                    margin-bottom: 2rem;
-                ">${this.state.error || ''}</p>
-                <button class="btn btn--primary" onclick="location.reload()">
+        return html`
+            <div class="error-screen">
+                <div class="error-stone"></div>
+                <h2 class="error-title">${t('errors.unknownError')}</h2>
+                <p class="error-message">${this.error || ''}</p>
+                <button class="btn--primary" @click=${() => location.reload()}>
                     ${t('welcome.continue')}
                 </button>
+            </div>
+        `;
+    }
+
+    render() {
+        console.log('🎮 Rendering screen:', this.screen);
+
+        return html`
+            <div class="container">
+                <div class="screen ${this.screen === Screen.HOME ? 'active' : ''}">
+                    <home-screen></home-screen>
+                </div>
+
+                <div class="screen ${this.screen === Screen.WELCOME ? 'active' : ''}">
+                    <magic-stone-welcome></magic-stone-welcome>
+                </div>
+
+                <div class="screen ${this.screen === Screen.DEVICE_MODE ? 'active' : ''}">
+                    <device-mode-selector></device-mode-selector>
+                </div>
+
+                <div class="screen ${this.screen === Screen.TAP_TO_LISTEN ? 'active' : ''}">
+                    ${this.renderTapToListen()}
+                </div>
+
+                <div class="screen ${this.screen === Screen.LOADING ? 'active' : ''}">
+                    ${this.renderLoading()}
+                </div>
+
+                <div class="screen ${this.screen === Screen.ERROR ? 'active' : ''}">
+                    ${this.renderError()}
+                </div>
             </div>
         `;
     }

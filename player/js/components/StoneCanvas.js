@@ -3,37 +3,56 @@
  * Inspired by the tape player, shows a glowing stone that pulses with playback
  */
 
+import { LitElement, html, css } from 'lit';
 import { eventBus, Events } from '../services/EventBus.js';
 
-class StoneCanvas extends HTMLElement {
+class StoneCanvas extends LitElement {
+    static styles = css`
+        :host {
+            display: block;
+            margin: 1rem 0;
+        }
+
+        .canvas-container {
+            width: 100%;
+            aspect-ratio: 1;
+            max-width: 250px;
+            max-height: 250px;
+            margin: 0 auto;
+        }
+
+        canvas {
+            display: block;
+        }
+    `;
+
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
-
         this.canvas = null;
         this.ctx = null;
         this.animationFrame = null;
 
         this.state = {
             isPlaying: false,
-            progress: 0, // 0 to 1
+            progress: 0,
             glowIntensity: 0.3
         };
 
         this.unsubscribers = [];
-
-        // Bind handler for proper cleanup
         this.handleResize = this.resize.bind(this);
     }
 
     connectedCallback() {
-        this.render();
-        this.setupCanvas();
+        super.connectedCallback();
+        this.updateComplete.then(() => {
+            this.setupCanvas();
+            this.startAnimation();
+        });
         this.setupEventListeners();
-        this.startAnimation();
     }
 
     disconnectedCallback() {
+        super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
@@ -43,14 +62,16 @@ class StoneCanvas extends HTMLElement {
 
     setupCanvas() {
         this.canvas = this.shadowRoot.getElementById('stone-canvas');
+        if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
         this.resize();
-
         window.addEventListener('resize', this.handleResize);
     }
 
     resize() {
         const container = this.shadowRoot.querySelector('.canvas-container');
+        if (!container || !this.canvas) return;
+
         const rect = container.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
 
@@ -91,6 +112,8 @@ class StoneCanvas extends HTMLElement {
     }
 
     draw() {
+        if (!this.canvas || !this.ctx) return;
+
         const width = this.canvas.width / (window.devicePixelRatio || 1);
         const height = this.canvas.height / (window.devicePixelRatio || 1);
 
@@ -100,20 +123,15 @@ class StoneCanvas extends HTMLElement {
         const centerY = height / 2;
         const baseRadius = Math.min(width, height) * 0.35;
 
-        // Animate glow intensity based on playback
         if (this.state.isPlaying) {
             this.state.glowIntensity = 0.4 + Math.sin(Date.now() / 500) * 0.15;
         } else {
             this.state.glowIntensity = 0.25;
         }
 
-        // Draw glow rings
         this.drawGlowRings(centerX, centerY, baseRadius);
-
-        // Draw stone
         this.drawStone(centerX, centerY, baseRadius);
 
-        // Draw progress ring
         if (this.state.progress > 0) {
             this.drawProgressRing(centerX, centerY, baseRadius + 15);
         }
@@ -137,20 +155,17 @@ class StoneCanvas extends HTMLElement {
     }
 
     drawStone(x, y, radius) {
-        // Organic stone shape using bezier curves
         const time = Date.now() / 3000;
         const wobble = this.state.isPlaying ? 3 : 1;
 
         this.ctx.save();
         this.ctx.translate(x, y);
 
-        // Slight floating animation
         const floatY = Math.sin(time * 2) * wobble;
         const floatRotation = Math.sin(time) * 0.02 * wobble;
         this.ctx.translate(0, floatY);
         this.ctx.rotate(floatRotation);
 
-        // Create gradient
         const gradient = this.ctx.createRadialGradient(
             -radius * 0.3, -radius * 0.3, 0,
             0, 0, radius
@@ -160,17 +175,14 @@ class StoneCanvas extends HTMLElement {
         gradient.addColorStop(0.7, '#cc3d00');
         gradient.addColorStop(1, '#802600');
 
-        // Draw organic stone shape
         this.ctx.beginPath();
         this.drawOrganicShape(0, 0, radius);
         this.ctx.fillStyle = gradient;
 
-        // Glow shadow
         this.ctx.shadowColor = `rgba(255, 77, 0, ${this.state.glowIntensity})`;
         this.ctx.shadowBlur = 30 + (this.state.isPlaying ? 20 : 0);
         this.ctx.fill();
 
-        // Inner highlight
         const highlightGradient = this.ctx.createRadialGradient(
             -radius * 0.4, -radius * 0.4, 0,
             -radius * 0.2, -radius * 0.2, radius * 0.5
@@ -187,7 +199,6 @@ class StoneCanvas extends HTMLElement {
     }
 
     drawOrganicShape(x, y, radius) {
-        // Create an organic, stone-like shape
         const points = 8;
         const variance = 0.15;
 
@@ -200,7 +211,6 @@ class StoneCanvas extends HTMLElement {
             if (i === 0) {
                 this.ctx.moveTo(px, py);
             } else {
-                // Use quadratic curves for smoother shape
                 const prevAngle = ((i - 0.5) / points) * Math.PI * 2;
                 const cpR = radius * (1 + Math.sin(prevAngle * 3) * variance);
                 const cpX = x + Math.cos(prevAngle) * cpR;
@@ -216,14 +226,12 @@ class StoneCanvas extends HTMLElement {
         const startAngle = -Math.PI / 2;
         const endAngle = startAngle + (Math.PI * 2 * this.state.progress);
 
-        // Background ring
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, Math.PI * 2);
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
 
-        // Progress ring
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, startAngle, endAngle);
         this.ctx.strokeStyle = '#FF4D00';
@@ -233,26 +241,7 @@ class StoneCanvas extends HTMLElement {
     }
 
     render() {
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    margin: 1rem 0;
-                }
-
-                .canvas-container {
-                    width: 100%;
-                    aspect-ratio: 1;
-                    max-width: 250px;
-                    max-height: 250px;
-                    margin: 0 auto;
-                }
-
-                canvas {
-                    display: block;
-                }
-            </style>
-
+        return html`
             <div class="canvas-container">
                 <canvas id="stone-canvas"></canvas>
             </div>

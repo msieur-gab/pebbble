@@ -3,19 +3,37 @@
  * Shows two reels with tape that transfers based on playback progress
  */
 
+import { LitElement, html, css } from 'lit';
 import { eventBus, Events } from '../services/EventBus.js';
 import { audio } from '../services/AudioService.js';
 
-class TapeCanvas extends HTMLElement {
+class TapeCanvas extends LitElement {
+    static styles = css`
+        :host {
+            display: block;
+            margin: 0.5rem 0;
+            flex-shrink: 0;
+        }
+
+        .canvas-container {
+            width: 100%;
+            min-width: 240px;
+            aspect-ratio: 2/1;
+            max-height: 120px;
+            margin: 0 auto;
+        }
+
+        canvas {
+            display: block;
+        }
+    `;
+
     constructor() {
         super();
-        this.attachShadow({ mode: 'open' });
-
         this.canvas = null;
         this.ctx = null;
         this.animationFrame = null;
 
-        // Colors
         this.colors = {
             tape: '#FF4D00',
             hub: '#000000',
@@ -23,14 +41,12 @@ class TapeCanvas extends HTMLElement {
             hubStroke: 'rgba(255, 77, 0, 0.2)'
         };
 
-        // Physics - scaled down to fit container
         this.physics = {
             hubRadius: 18,
             maxRadius: 55,
             distance: 65
         };
 
-        // State
         this.state = {
             isPlaying: false,
             duration: 180,
@@ -41,13 +57,12 @@ class TapeCanvas extends HTMLElement {
         };
 
         this.unsubscribers = [];
-
-        // Bind handler for proper cleanup
         this.handleResize = this.resize.bind(this);
     }
 
     connectedCallback() {
-        // Get current state from audio service
+        super.connectedCallback();
+
         const state = audio.getState();
         this.state.isPlaying = state.isPlaying;
         this.state.currentTime = state.currentTime;
@@ -56,13 +71,15 @@ class TapeCanvas extends HTMLElement {
             this.state.progress = state.currentTime / state.duration;
         }
 
-        this.render();
-        this.setupCanvas();
+        this.updateComplete.then(() => {
+            this.setupCanvas();
+            this.startAnimation();
+        });
         this.setupEventListeners();
-        this.startAnimation();
     }
 
     disconnectedCallback() {
+        super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
@@ -72,14 +89,16 @@ class TapeCanvas extends HTMLElement {
 
     setupCanvas() {
         this.canvas = this.shadowRoot.getElementById('tape-canvas');
+        if (!this.canvas) return;
         this.ctx = this.canvas.getContext('2d');
         this.resize();
-
         window.addEventListener('resize', this.handleResize);
     }
 
     resize() {
         const container = this.shadowRoot.querySelector('.canvas-container');
+        if (!container || !this.canvas) return;
+
         const rect = container.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
 
@@ -121,7 +140,6 @@ class TapeCanvas extends HTMLElement {
             })
         );
 
-        // Resize when player sheet expands
         this.unsubscribers.push(
             eventBus.on(Events.PLAYER_SHEET_EXPAND, () => {
                 setTimeout(() => this.resize(), 50);
@@ -159,6 +177,8 @@ class TapeCanvas extends HTMLElement {
     }
 
     draw() {
+        if (!this.canvas || !this.ctx) return;
+
         const width = this.canvas.width / (window.devicePixelRatio || 1);
         const height = this.canvas.height / (window.devicePixelRatio || 1);
 
@@ -172,7 +192,6 @@ class TapeCanvas extends HTMLElement {
         const leftRadius = this.calculateRadius(1 - progress);
         const rightRadius = this.calculateRadius(progress);
 
-        // Taut Tape Geometry
         const x1 = centerX - offset;
         const x2 = centerX + offset;
         const diff = rightRadius - leftRadius;
@@ -184,7 +203,6 @@ class TapeCanvas extends HTMLElement {
         const tx2 = x2 + rightRadius * Math.cos(theta);
         const ty2 = centerY + rightRadius * Math.sin(theta);
 
-        // Draw Tape Line
         this.ctx.beginPath();
         this.ctx.strokeStyle = this.colors.tape;
         this.ctx.lineWidth = 4;
@@ -193,7 +211,6 @@ class TapeCanvas extends HTMLElement {
         this.ctx.lineTo(tx2, ty2);
         this.ctx.stroke();
 
-        // Draw Reels
         this.drawReel(centerX - offset, centerY, leftRadius, this.state.leftAngle);
         this.drawReel(centerX + offset, centerY, rightRadius, this.state.rightAngle);
     }
@@ -201,31 +218,26 @@ class TapeCanvas extends HTMLElement {
     drawReel(x, y, radius, angle) {
         const { hubRadius } = this.physics;
 
-        // Tape reel (outer circle)
         this.ctx.beginPath();
         this.ctx.arc(x, y, radius, 0, Math.PI * 2);
         this.ctx.fillStyle = this.colors.tape;
         this.ctx.fill();
 
-        // Hub (inner circle)
         this.ctx.beginPath();
         this.ctx.arc(x, y, hubRadius, 0, Math.PI * 2);
         this.ctx.fillStyle = this.colors.hub;
         this.ctx.fill();
 
-        // Hub stroke
         this.ctx.beginPath();
         this.ctx.arc(x, y, hubRadius, 0, Math.PI * 2);
         this.ctx.strokeStyle = this.colors.hubStroke;
         this.ctx.lineWidth = 1;
         this.ctx.stroke();
 
-        // Rotation marker
         this.ctx.save();
         this.ctx.translate(x, y);
         this.ctx.rotate(angle);
 
-        // Marker line
         this.ctx.beginPath();
         this.ctx.moveTo(0, 0);
         this.ctx.lineTo(hubRadius - 2, 0);
@@ -233,7 +245,6 @@ class TapeCanvas extends HTMLElement {
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
 
-        // Marker dot
         this.ctx.beginPath();
         this.ctx.arc(hubRadius - 5, 0, 2, 0, Math.PI * 2);
         this.ctx.fillStyle = this.colors.marker;
@@ -243,27 +254,7 @@ class TapeCanvas extends HTMLElement {
     }
 
     render() {
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                    margin: 0.5rem 0;
-                    flex-shrink: 0;
-                }
-
-                .canvas-container {
-                    width: 100%;
-                    min-width: 240px;
-                    aspect-ratio: 2/1;
-                    max-height: 120px;
-                    margin: 0 auto;
-                }
-
-                canvas {
-                    display: block;
-                }
-            </style>
-
+        return html`
             <div class="canvas-container">
                 <canvas id="tape-canvas"></canvas>
             </div>
