@@ -172,47 +172,96 @@ class HomeScreen extends LitElement {
 
         .library-section {
             margin-top: 1rem;
+            padding-bottom: 80px; /* Space for FAB */
         }
 
-        /* NFC Scan Button */
-        .nfc-scan-btn {
+        /* NFC FAB (Floating Action Button) */
+        .nfc-fab {
+            position: fixed;
+            bottom: 100px; /* Above the mini player */
+            right: 1.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--color-accent, #FF4D00);
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 77, 0, 0.4);
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            background: var(--color-bg-elevated, #242424);
-            border: 2px dashed var(--color-accent, #FF4D00);
-            border-radius: 16px;
-            color: var(--color-accent, #FF4D00);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            z-index: 100;
         }
 
-        .nfc-scan-btn:hover:not(:disabled) {
-            background: rgba(255, 77, 0, 0.1);
+        .nfc-fab:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(255, 77, 0, 0.5);
         }
 
-        .nfc-scan-btn:disabled {
-            opacity: 0.6;
+        .nfc-fab:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .nfc-fab:disabled {
+            background: var(--color-surface, #333);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             cursor: not-allowed;
         }
 
-        .nfc-scan-btn.scanning {
-            border-style: solid;
+        .nfc-fab.scanning {
+            animation: fab-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fab-pulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(255, 77, 0, 0.4);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(255, 77, 0, 0.6), 0 0 0 8px rgba(255, 77, 0, 0.1);
+                transform: scale(1.05);
+            }
+        }
+
+        .nfc-fab .icon {
+            line-height: 1;
+        }
+
+        /* First time user button (larger, centered) */
+        .first-time-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            margin-top: 1.5rem;
+            background: var(--color-accent, #FF4D00);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 77, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .first-time-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 77, 0, 0.4);
+        }
+
+        .first-time-btn:disabled {
+            background: var(--color-surface, #333);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .first-time-btn.scanning {
             animation: pulse-border 2s ease-in-out infinite;
-        }
-
-        .nfc-scan-btn .icon {
-            font-size: 1.25rem;
-        }
-
-        .nfc-scan-btn.scanning .icon {
-            animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
@@ -355,20 +404,16 @@ class HomeScreen extends LitElement {
         `;
     }
 
-    renderNfcScanButton() {
+    renderNfcFab() {
         if (!this.nfcSupported) return '';
-
-        const buttonText = this.isNfcScanning
-            ? t('nfc.scanning')
-            : t('nfc.activate');
 
         return html`
             <button
-                class="nfc-scan-btn ${this.isNfcScanning ? 'scanning' : ''}"
+                class="nfc-fab ${this.isNfcScanning ? 'scanning' : ''}"
                 @click=${this.startNfcScan}
-                ?disabled=${this.isNfcScanning}>
+                ?disabled=${this.isNfcScanning}
+                aria-label="${this.isNfcScanning ? t('nfc.scanning') : t('nfc.activate')}">
                 <span class="icon">${this.isNfcScanning ? '📡' : '+'}</span>
-                ${buttonText}
             </button>
         `;
     }
@@ -386,11 +431,10 @@ class HomeScreen extends LitElement {
                     <p class="hint-text">${t('home.tapToAdd')}</p>
                     ${this.nfcSupported ? html`
                         <button
-                            class="nfc-scan-btn ${this.isNfcScanning ? 'scanning' : ''}"
-                            style="margin-top: 1.5rem;"
+                            class="first-time-btn ${this.isNfcScanning ? 'scanning' : ''}"
                             @click=${this.startNfcScan}
                             ?disabled=${this.isNfcScanning}>
-                            <span class="icon">📡</span>
+                            <span>📡</span>
                             ${this.isNfcScanning ? t('nfc.scanning') : t('nfc.activate')}
                         </button>
                     ` : ''}
@@ -399,7 +443,6 @@ class HomeScreen extends LitElement {
         }
 
         return html`
-            ${this.renderNfcScanButton()}
             <div class="library-section">
                 <offline-library></offline-library>
             </div>
@@ -424,6 +467,8 @@ class HomeScreen extends LitElement {
             <section class="content">
                 ${this.renderContent()}
             </section>
+
+            ${!this.isFirstTimeUser ? this.renderNfcFab() : ''}
         `;
     }
 }

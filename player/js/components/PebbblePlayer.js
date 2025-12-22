@@ -17,7 +17,6 @@ import { dateLock } from '../services/DateLockService.js';
 import { nfc } from '../services/NFCService.js';
 
 const Screen = {
-    NFC_PROMPT: 'nfc_prompt',
     HOME: 'home',
     WELCOME: 'welcome',
     DEVICE_MODE: 'device_mode',
@@ -209,7 +208,7 @@ class PebbblePlayer extends LitElement {
 
     constructor() {
         super();
-        this.screen = Screen.NFC_PROMPT;
+        this.screen = Screen.HOME;
         this.nfcData = null;
         this.playlist = [];
         this.error = null;
@@ -222,7 +221,7 @@ class PebbblePlayer extends LitElement {
         super.connectedCallback();
         console.log('🎮 PebbblePlayer connected (Android NFC version)');
         this.setupEventListeners();
-        await this.determineInitialScreen();
+        // Always start at HOME - library view with FAB for NFC
     }
 
     disconnectedCallback() {
@@ -230,21 +229,6 @@ class PebbblePlayer extends LitElement {
         this.unsubscribers.forEach(unsub => unsub());
         dateLock.stopWatching();
         nfc.stopReader();
-    }
-
-    async determineInitialScreen() {
-        // Check if user has any cached playlists
-        const playlists = await storage.getAllPlaylists();
-
-        if (playlists.length > 0) {
-            // Returning user with cached content - show home with library
-            console.log('📚 User has cached playlists, showing home');
-            this.screen = Screen.HOME;
-        } else {
-            // First-time user or no cached content - show NFC prompt
-            console.log('📡 No cached content, showing NFC prompt');
-            this.screen = Screen.NFC_PROMPT;
-        }
     }
 
     async handleNfcTagRead(data) {
@@ -573,10 +557,6 @@ class PebbblePlayer extends LitElement {
 
         return html`
             <div class="container">
-                <div class="screen ${this.screen === Screen.NFC_PROMPT ? 'active' : ''}">
-                    <nfc-prompt></nfc-prompt>
-                </div>
-
                 <div class="screen ${this.screen === Screen.HOME ? 'active' : ''}">
                     <home-screen></home-screen>
                 </div>
