@@ -9,12 +9,15 @@ import { eventBus, Events } from '../services/EventBus.js';
 import { storage } from '../services/StorageService.js';
 import { t } from '../services/I18nService.js';
 import { audio } from '../services/AudioService.js';
+import { nfc } from '../services/NFCService.js';
 import { ICON_SETTINGS } from '../utils/icons.js';
 
 class HomeScreen extends LitElement {
     static properties = {
         isFirstTimeUser: { state: true },
-        pendingTag: { state: true }
+        pendingTag: { state: true },
+        isNfcScanning: { state: true },
+        nfcSupported: { state: true }
     };
 
     static styles = css`
@@ -170,12 +173,60 @@ class HomeScreen extends LitElement {
         .library-section {
             margin-top: 1rem;
         }
+
+        /* NFC Scan Button */
+        .nfc-scan-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            background: var(--color-bg-elevated, #242424);
+            border: 2px dashed var(--color-accent, #FF4D00);
+            border-radius: 16px;
+            color: var(--color-accent, #FF4D00);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nfc-scan-btn:hover:not(:disabled) {
+            background: rgba(255, 77, 0, 0.1);
+        }
+
+        .nfc-scan-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .nfc-scan-btn.scanning {
+            border-style: solid;
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        .nfc-scan-btn .icon {
+            font-size: 1.25rem;
+        }
+
+        .nfc-scan-btn.scanning .icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.95); }
+        }
     `;
 
     constructor() {
         super();
         this.isFirstTimeUser = true;
         this.pendingTag = null;
+        this.isNfcScanning = false;
+        this.nfcSupported = nfc.isSupported();
         this.unsubscribers = [];
     }
 
@@ -211,18 +262,49 @@ class HomeScreen extends LitElement {
         this.unsubscribers.push(
             eventBus.on(Events.TAG_DETECTED, (data) => {
                 this.pendingTag = data;
+                this.isNfcScanning = false;
             })
         );
 
         this.unsubscribers.push(
             eventBus.on(Events.PLAYLIST_LOADED, () => {
                 this.pendingTag = null;
+                this.isNfcScanning = false;
+            })
+        );
+
+        // NFC events
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_ACTIVATED, () => {
+                this.isNfcScanning = true;
+            })
+        );
+
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_TAG_READ, () => {
+                this.isNfcScanning = false;
+            })
+        );
+
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_ERROR, () => {
+                this.isNfcScanning = false;
             })
         );
     }
 
     openSettings() {
         eventBus.emit(Events.SETTINGS_OPEN);
+    }
+
+    async startNfcScan() {
+        if (this.isNfcScanning) return;
+
+        try {
+            await nfc.startReader();
+        } catch (error) {
+            // Error handled via event bus
+        }
     }
 
     async handleTagAction() {
@@ -273,6 +355,24 @@ class HomeScreen extends LitElement {
         `;
     }
 
+    renderNfcScanButton() {
+        if (!this.nfcSupported) return '';
+
+        const buttonText = this.isNfcScanning
+            ? t('nfc.scanning')
+            : t('nfc.activate');
+
+        return html`
+            <button
+                class="nfc-scan-btn ${this.isNfcScanning ? 'scanning' : ''}"
+                @click=${this.startNfcScan}
+                ?disabled=${this.isNfcScanning}>
+                <span class="icon">${this.isNfcScanning ? '📡' : '+'}</span>
+                ${buttonText}
+            </button>
+        `;
+    }
+
     renderContent() {
         if (this.pendingTag) {
             return this.renderPendingTag();
@@ -284,11 +384,22 @@ class HomeScreen extends LitElement {
                     <div class="hint-stone"></div>
                     <h3 class="hint-title">${t('home.emptyLibrary')}</h3>
                     <p class="hint-text">${t('home.tapToAdd')}</p>
+                    ${this.nfcSupported ? html`
+                        <button
+                            class="nfc-scan-btn ${this.isNfcScanning ? 'scanning' : ''}"
+                            style="margin-top: 1.5rem;"
+                            @click=${this.startNfcScan}
+                            ?disabled=${this.isNfcScanning}>
+                            <span class="icon">📡</span>
+                            ${this.isNfcScanning ? t('nfc.scanning') : t('nfc.activate')}
+                        </button>
+                    ` : ''}
                 </div>
             `;
         }
 
         return html`
+            ${this.renderNfcScanButton()}
             <div class="library-section">
                 <offline-library></offline-library>
             </div>

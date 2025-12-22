@@ -1,7 +1,8 @@
 /**
- * PebbblePlayer - Main application shell component
- * Manages app flow: Home → [Welcome → Device mode] → Loading → Home (with player sheet)
- * Tag data comes from URL hash: #serial=XX&playlistHash=XX
+ * PebbblePlayer - Main application shell component (Android NFC version)
+ * Manages app flow: NFC_PROMPT → [Welcome → Device mode] → Loading → Home (with player sheet)
+ * Serial is extracted from NFC tag scan (not from URL) for better security
+ * playlistHash comes from the tag's NDEF URL record
  * Player is a bottom sheet overlay, not a separate screen
  */
 
@@ -13,8 +14,10 @@ import { ipfs } from '../services/IPFSService.js';
 import { cryptoService } from '../services/CryptoService.js';
 import { audio } from '../services/AudioService.js';
 import { dateLock } from '../services/DateLockService.js';
+import { nfc } from '../services/NFCService.js';
 
 const Screen = {
+    NFC_PROMPT: 'nfc_prompt',
     HOME: 'home',
     WELCOME: 'welcome',
     DEVICE_MODE: 'device_mode',
@@ -206,57 +209,71 @@ class PebbblePlayer extends LitElement {
 
     constructor() {
         super();
-        this.screen = Screen.HOME;
+        this.screen = Screen.NFC_PROMPT;
         this.nfcData = null;
         this.playlist = [];
         this.error = null;
         this.loadingMessage = '';
         this.isLoading = false;
         this.unsubscribers = [];
-        this.boundHashChangeHandler = this.handleHashChange.bind(this);
     }
 
     async connectedCallback() {
         super.connectedCallback();
-        console.log('🎮 PebbblePlayer connected');
+        console.log('🎮 PebbblePlayer connected (Android NFC version)');
         this.setupEventListeners();
-
-        window.addEventListener('hashchange', this.boundHashChangeHandler);
-
-        const urlParams = this.parseUrlParams();
-        if (urlParams) {
-            this.handleTagUrl(urlParams);
-        }
+        await this.determineInitialScreen();
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.unsubscribers.forEach(unsub => unsub());
-        window.removeEventListener('hashchange', this.boundHashChangeHandler);
         dateLock.stopWatching();
+        nfc.stopReader();
     }
 
-    parseUrlParams() {
-        const hash = window.location.hash.slice(1);
-        if (!hash) return null;
+    async determineInitialScreen() {
+        // Check if user has any cached playlists
+        const playlists = await storage.getAllPlaylists();
 
-        const params = new URLSearchParams(hash);
-        const serial = params.get('serial');
-        const playlistHash = params.get('playlistHash');
-
-        if (serial && playlistHash) {
-            return { serial: serial.toUpperCase(), playlistHash };
+        if (playlists.length > 0) {
+            // Returning user with cached content - show home with library
+            console.log('📚 User has cached playlists, showing home');
+            this.screen = Screen.HOME;
+        } else {
+            // First-time user or no cached content - show NFC prompt
+            console.log('📡 No cached content, showing NFC prompt');
+            this.screen = Screen.NFC_PROMPT;
         }
-        return null;
     }
 
-    async handleTagUrl(params) {
-        const { serial, playlistHash } = params;
-        console.log('🏷️ Tag detected from URL');
+    async handleNfcTagRead(data) {
+        const { serial, playlistHash, url } = data;
+        console.log('🏷️ NFC Tag scanned!');
         console.log(`   Serial: ${serial}`);
         console.log(`   Playlist: ${playlistHash}`);
 
-        this.nfcData = { serial, playlistHash, url: window.location.href };
+        if (!serial) {
+            console.error('❌ No serial number from NFC tag');
+            eventBus.emit(Events.SHOW_TOAST, {
+                message: 'Could not read tag serial number',
+                type: 'error',
+                duration: 5000
+            });
+            return;
+        }
+
+        if (!playlistHash) {
+            console.error('❌ No playlist hash in tag URL');
+            eventBus.emit(Events.SHOW_TOAST, {
+                message: 'Invalid Pebbble tag - no playlist found',
+                type: 'error',
+                duration: 5000
+            });
+            return;
+        }
+
+        this.nfcData = { serial, playlistHash, url };
 
         const remembered = localStorage.getItem('pebbble-device-mode');
         const cached = await storage.getPlaylist(playlistHash);
@@ -281,15 +298,14 @@ class PebbblePlayer extends LitElement {
         }
     }
 
-    handleHashChange() {
-        const params = this.parseUrlParams();
-        if (params) {
-            console.log('🔄 Hash changed - new tag detected');
-            this.handleTagUrl(params);
-        }
-    }
-
     setupEventListeners() {
+        // NFC tag read - the main entry point for new playlists
+        this.unsubscribers.push(
+            eventBus.on(Events.NFC_TAG_READ, (data) => {
+                this.handleNfcTagRead(data);
+            })
+        );
+
         this.unsubscribers.push(
             eventBus.on(Events.WELCOME_COMPLETE, () => {
                 this.handleWelcomeComplete();
@@ -557,6 +573,10 @@ class PebbblePlayer extends LitElement {
 
         return html`
             <div class="container">
+                <div class="screen ${this.screen === Screen.NFC_PROMPT ? 'active' : ''}">
+                    <nfc-prompt></nfc-prompt>
+                </div>
+
                 <div class="screen ${this.screen === Screen.HOME ? 'active' : ''}">
                     <home-screen></home-screen>
                 </div>

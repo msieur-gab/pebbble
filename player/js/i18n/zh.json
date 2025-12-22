@@ -1,4 +1,17 @@
 {
+    "nfc": {
+        "activate": "激活 NFC",
+        "starting": "启动中...",
+        "scanning": "扫描中...",
+        "tryAgain": "重试",
+        "ready": "准备收听",
+        "tapToActivate": "点击按钮开始扫描",
+        "holdClose": "将 Pebbble 靠近设备",
+        "notSupported": "不支持 NFC",
+        "useAndroid": "Web NFC 需要在安卓设备上使用 Chrome 浏览器。请使用手机扫描你的 Pebbble 标签。",
+        "hint": "提示",
+        "hintText": "将 Pebbble 放在手机顶部 NFC 天线所在的位置附近。"
+    },
     "home": {
         "welcome": "欢迎使用 Pebbble",
         "welcomeBack": "欢迎回来！",

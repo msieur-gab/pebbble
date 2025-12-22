@@ -1,6 +1,7 @@
 /**
- * Pebbble Player - Application Entry Point
+ * Pebbble Player - Application Entry Point (Android NFC version)
  * Initializes services and registers components
+ * Uses Web NFC API to extract tag serial for secure decryption
  */
 
 // Services
@@ -9,10 +10,12 @@ import { storage } from './services/StorageService.js';
 import { audio } from './services/AudioService.js';
 import { eventBus, Events } from './services/EventBus.js';
 import { installPrompt } from './services/InstallPromptService.js';
+import { nfc } from './services/NFCService.js';
 
 // Components
 import './components/PebbblePlayer.js';
 import './components/HomeScreen.js';
+import './components/NfcPrompt.js';
 import './components/SettingsPanel.js';
 import './components/MagicStoneWelcome.js';
 import './components/DeviceModeSelector.js';
@@ -57,7 +60,14 @@ async function init() {
         // 5. Initialize install prompt
         installPrompt.init();
 
-        console.log('✅ Pebbble Player ready!');
+        // 6. Check NFC support
+        if (nfc.isSupported()) {
+            console.log('📡 NFC supported');
+        } else {
+            console.log('📡 NFC not supported - Web NFC requires Chrome on Android');
+        }
+
+        console.log('✅ Pebbble Player ready! (Android NFC version)');
 
     } catch (error) {
         console.error('❌ Initialization failed:', error);
@@ -139,5 +149,6 @@ window.pebbble = {
     eventBus,
     audio,
     storage,
-    i18n
+    i18n,
+    nfc
 };

@@ -3,7 +3,7 @@
  * Caches app shell for offline use
  */
 
-const CACHE_NAME = 'pebbble-v39';
+const CACHE_NAME = 'pebbble-v40-nfc';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -22,8 +22,10 @@ const STATIC_ASSETS = [
     './js/services/AudioService.js',
     './js/services/DateLockService.js',
     './js/services/InstallPromptService.js',
+    './js/services/NFCService.js',
     './js/components/PebbblePlayer.js',
     './js/components/HomeScreen.js',
+    './js/components/NfcPrompt.js',
     './js/components/SettingsPanel.js',
     './js/components/PlayerSheet.js',
     './js/components/MiniPlayer.js',

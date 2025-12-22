@@ -1,4 +1,17 @@
 {
+    "nfc": {
+        "activate": "Activate NFC",
+        "starting": "Starting...",
+        "scanning": "Scanning...",
+        "tryAgain": "Try Again",
+        "ready": "Ready to Listen",
+        "tapToActivate": "Tap the button to start scanning",
+        "holdClose": "Hold your Pebbble close to your device",
+        "notSupported": "NFC Not Supported",
+        "useAndroid": "Web NFC requires Chrome on Android. Use your phone to scan your Pebbble tag.",
+        "hint": "Tip",
+        "hintText": "Hold the Pebbble near the top of your phone where the NFC antenna is located."
+    },
     "home": {
         "welcome": "Welcome to Pebbble",
         "welcomeBack": "Welcome back!",
