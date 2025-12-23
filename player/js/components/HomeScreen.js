@@ -226,8 +226,28 @@ class HomeScreen extends LitElement {
             }
         }
 
-        .nfc-fab .icon {
-            line-height: 1;
+        .nfc-fab .fab-stone {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(
+                135deg,
+                #fff 0%,
+                #f0f0f0 40%,
+                #ddd 70%,
+                #ccc 100%
+            );
+            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+            box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.2),
+                        inset 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .nfc-fab.scanning .fab-stone {
+            animation: fab-stone-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes fab-stone-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.9); opacity: 0.8; }
         }
 
         /* First time user button (larger, centered) */
@@ -262,6 +282,21 @@ class HomeScreen extends LitElement {
 
         .first-time-btn.scanning {
             animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        .first-time-btn .btn-stone {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(
+                135deg,
+                #fff 0%,
+                #f0f0f0 40%,
+                #ddd 70%,
+                #ccc 100%
+            );
+            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+            box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.2),
+                        inset 1px 1px 1px rgba(255, 255, 255, 0.8);
         }
 
         @keyframes pulse {
@@ -413,7 +448,7 @@ class HomeScreen extends LitElement {
                 @click=${this.startNfcScan}
                 ?disabled=${this.isNfcScanning}
                 aria-label="${this.isNfcScanning ? t('nfc.scanning') : t('nfc.activate')}">
-                <span class="icon">${this.isNfcScanning ? '📡' : '+'}</span>
+                <div class="fab-stone"></div>
             </button>
         `;
     }
@@ -434,7 +469,7 @@ class HomeScreen extends LitElement {
                             class="first-time-btn ${this.isNfcScanning ? 'scanning' : ''}"
                             @click=${this.startNfcScan}
                             ?disabled=${this.isNfcScanning}>
-                            <span>📡</span>
+                            <div class="btn-stone"></div>
                             ${this.isNfcScanning ? t('nfc.scanning') : t('nfc.activate')}
                         </button>
                     ` : ''}
