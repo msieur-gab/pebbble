@@ -137,37 +137,133 @@ class HomeScreen extends LitElement {
             transform: scale(0.98);
         }
 
-        .first-time-hint {
+        /* Empty state - matches onboarding screen 4 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 3rem 1.5rem;
-            background: var(--color-bg-elevated, #242424);
-            border-radius: 16px;
-            border: 2px dashed var(--color-surface, #333);
+            flex: 1;
+            padding: 2rem;
         }
 
-        .hint-stone {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 1rem;
-            background: linear-gradient(135deg, var(--color-accent, #FF4D00) 0%, #cc3d00 50%, #993000 100%);
-            border-radius: 60% 40% 50% 50% / 50% 60% 40% 50%;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.3), 0 0 15px rgba(255, 77, 0, 0.3);
-            opacity: 0.6;
+        .scan-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
         }
 
-        .hint-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .ring {
+            position: absolute;
+            border: 2px solid var(--color-accent, #FF4D00);
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .ring.active {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .ring:nth-child(1) { inset: 0; }
+        .ring:nth-child(2) { inset: 20px; animation-delay: 0.5s; }
+        .ring:nth-child(3) { inset: 40px; animation-delay: 1s; }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        .scan-stone {
+            width: 80px;
+            height: 80px;
+            z-index: 1;
+        }
+
+        .scan-stone .stone {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                #FF4D00 0%,
+                #cc3d00 40%,
+                #993000 70%,
+                #662000 100%
+            );
+            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+            box-shadow:
+                inset -8px -8px 20px rgba(0, 0, 0, 0.4),
+                inset 4px 4px 10px rgba(255, 255, 255, 0.15),
+                0 10px 20px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(255, 77, 0, 0.4);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-8px) rotate(2deg); }
+            75% { transform: translateY(-4px) rotate(-2deg); }
+        }
+
+        .scan-stone.scanning .stone {
+            animation: float 4s ease-in-out infinite, stone-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes stone-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.95); }
+        }
+
+        .empty-state h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--color-text-primary, #fff);
-            margin-bottom: 0.5rem;
+            margin: 0 0 1rem 0;
+            background: linear-gradient(135deg, #FF4D00, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .hint-text {
-            font-size: 0.9rem;
-            color: var(--color-text-muted, #888);
-            max-width: 280px;
-            margin: 0 auto;
-            line-height: 1.5;
+        .empty-state p {
+            font-size: 1rem;
+            color: var(--color-text-secondary, #a0a0a0);
+            margin: 0 0 2rem 0;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+
+        .decrypt-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #FF4D00, #cc3d00);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 77, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .decrypt-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 77, 0, 0.5);
+        }
+
+        .decrypt-btn:disabled {
+            background: var(--color-surface, #333);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
         }
 
         .library-section {
@@ -250,59 +346,6 @@ class HomeScreen extends LitElement {
             50% { transform: scale(0.9); opacity: 0.8; }
         }
 
-        /* First time user button (larger, centered) */
-        .first-time-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            margin-top: 1.5rem;
-            background: var(--color-accent, #FF4D00);
-            border: none;
-            border-radius: 50px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 77, 0, 0.3);
-            transition: all 0.2s ease;
-        }
-
-        .first-time-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 77, 0, 0.4);
-        }
-
-        .first-time-btn:disabled {
-            background: var(--color-surface, #333);
-            box-shadow: none;
-            cursor: not-allowed;
-        }
-
-        .first-time-btn.scanning {
-            animation: pulse-border 2s ease-in-out infinite;
-        }
-
-        .first-time-btn .btn-stone {
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(
-                135deg,
-                #fff 0%,
-                #f0f0f0 40%,
-                #ddd 70%,
-                #ccc 100%
-            );
-            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
-            box-shadow: inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-                        inset 1px 1px 1px rgba(255, 255, 255, 0.8);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.95); }
-        }
     `;
 
     constructor() {
@@ -453,28 +496,51 @@ class HomeScreen extends LitElement {
         `;
     }
 
+    renderEmptyState() {
+        if (!this.nfcSupported) {
+            return html`
+                <div class="empty-state">
+                    <div class="scan-container">
+                        <div class="scan-stone">
+                            <div class="stone"></div>
+                        </div>
+                    </div>
+                    <h1>${t('nfc.notSupported')}</h1>
+                    <p>${t('nfc.useAndroid')}</p>
+                </div>
+            `;
+        }
+
+        return html`
+            <div class="empty-state">
+                <div class="scan-container">
+                    <div class="ring ${this.isNfcScanning ? 'active' : ''}"></div>
+                    <div class="ring ${this.isNfcScanning ? 'active' : ''}"></div>
+                    <div class="ring ${this.isNfcScanning ? 'active' : ''}"></div>
+                    <div class="scan-stone ${this.isNfcScanning ? 'scanning' : ''}">
+                        <div class="stone"></div>
+                    </div>
+                </div>
+
+                <h1>${this.isNfcScanning ? t('onboarding.decrypt.scanning') : t('onboarding.decrypt.title')}</h1>
+                <p>${this.isNfcScanning ? t('onboarding.decrypt.holdClose') : t('onboarding.decrypt.text')}</p>
+
+                ${!this.isNfcScanning ? html`
+                    <button class="decrypt-btn" @click=${this.startNfcScan}>
+                        ${t('onboarding.decrypt.button')}
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }
+
     renderContent() {
         if (this.pendingTag) {
             return this.renderPendingTag();
         }
 
         if (this.isFirstTimeUser) {
-            return html`
-                <div class="first-time-hint">
-                    <div class="hint-stone"></div>
-                    <h3 class="hint-title">${t('home.emptyLibrary')}</h3>
-                    <p class="hint-text">${t('home.tapToAdd')}</p>
-                    ${this.nfcSupported ? html`
-                        <button
-                            class="first-time-btn ${this.isNfcScanning ? 'scanning' : ''}"
-                            @click=${this.startNfcScan}
-                            ?disabled=${this.isNfcScanning}>
-                            <div class="btn-stone"></div>
-                            ${this.isNfcScanning ? t('nfc.scanning') : t('nfc.activate')}
-                        </button>
-                    ` : ''}
-                </div>
-            `;
+            return this.renderEmptyState();
         }
 
         return html`
