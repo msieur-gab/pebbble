@@ -210,13 +210,32 @@ class OnboardingFlow extends LitElement {
         }
 
         .toggle-group {
+            position: relative;
             display: flex;
             background: var(--color-surface, #333);
             border-radius: 25px;
             padding: 4px;
         }
 
+        .toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            background: var(--color-accent, #FF4D00);
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(255, 77, 0, 0.4);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toggle-slider.right {
+            transform: translateX(100%);
+        }
+
         .toggle-btn {
+            position: relative;
+            z-index: 1;
             padding: 0.75rem 1.5rem;
             font-size: 0.9rem;
             font-weight: 600;
@@ -225,14 +244,13 @@ class OnboardingFlow extends LitElement {
             border: none;
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: color 0.3s ease;
             min-width: 80px;
+            flex: 1;
         }
 
         .toggle-btn.active {
             color: #fff;
-            background: var(--color-accent, #FF4D00);
-            box-shadow: 0 2px 8px rgba(255, 77, 0, 0.4);
         }
 
         .dynamic-text {
@@ -578,6 +596,7 @@ class OnboardingFlow extends LitElement {
                 <div class="toggle-container">
                     <div class="toggle-label">${t('onboarding.device.question')}</div>
                     <div class="toggle-group">
+                        <div class="toggle-slider ${this.isPersonalDevice ? 'right' : ''}"></div>
                         <button
                             class="toggle-btn ${!this.isPersonalDevice ? 'active' : ''}"
                             @click=${() => this.toggleDeviceMode(false)}>
