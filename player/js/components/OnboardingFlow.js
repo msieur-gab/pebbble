@@ -45,24 +45,70 @@ class OnboardingFlow extends LitElement {
             box-sizing: border-box;
         }
 
-        /* Stone icon */
-        .stone-icon {
+        /* Stone icon - CSS styled like MagicStoneWelcome */
+        .stone-container {
+            position: relative;
             width: 120px;
             height: 120px;
             margin-bottom: 2rem;
         }
 
-        .stone-icon svg {
+        .stone {
             width: 100%;
             height: 100%;
-            filter: drop-shadow(0 0 30px rgba(255, 77, 0, 0.4));
-            animation: float 4s ease-in-out infinite;
+            background: linear-gradient(
+                135deg,
+                #FF4D00 0%,
+                #cc3d00 40%,
+                #993000 70%,
+                #662000 100%
+            );
+            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+            box-shadow:
+                inset -10px -10px 30px rgba(0, 0, 0, 0.4),
+                inset 5px 5px 15px rgba(255, 255, 255, 0.15),
+                0 15px 30px rgba(0, 0, 0, 0.4),
+                0 0 40px rgba(255, 77, 0, 0.4);
+            animation: float 4s ease-in-out infinite, glow 3s ease-in-out infinite;
+        }
+
+        .stone.small {
+            width: 80px;
+            height: 80px;
+        }
+
+        .stone.mini {
+            width: 24px;
+            height: 24px;
+            box-shadow:
+                inset -3px -3px 8px rgba(0, 0, 0, 0.4),
+                inset 2px 2px 4px rgba(255, 255, 255, 0.15),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                0 0 12px rgba(255, 77, 0, 0.4);
+            animation: none;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0deg); }
             25% { transform: translateY(-8px) rotate(2deg); }
             75% { transform: translateY(-4px) rotate(-2deg); }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow:
+                    inset -10px -10px 30px rgba(0, 0, 0, 0.4),
+                    inset 5px 5px 15px rgba(255, 255, 255, 0.15),
+                    0 15px 30px rgba(0, 0, 0, 0.4),
+                    0 0 40px rgba(255, 77, 0, 0.4);
+            }
+            50% {
+                box-shadow:
+                    inset -10px -10px 30px rgba(0, 0, 0, 0.4),
+                    inset 5px 5px 15px rgba(255, 255, 255, 0.15),
+                    0 15px 30px rgba(0, 0, 0, 0.4),
+                    0 0 60px rgba(255, 77, 0, 0.6);
+            }
         }
 
         /* Typography */
@@ -235,19 +281,18 @@ class OnboardingFlow extends LitElement {
             z-index: 1;
         }
 
-        .scan-stone svg {
+        .scan-stone .stone {
             width: 100%;
             height: 100%;
-            filter: drop-shadow(0 0 20px rgba(255, 77, 0, 0.5));
         }
 
-        .scan-stone.scanning svg {
-            animation: pulse 2s ease-in-out infinite;
+        .scan-stone.scanning .stone {
+            animation: float 4s ease-in-out infinite, pulse-stone 2s ease-in-out infinite;
         }
 
-        @keyframes pulse {
+        @keyframes pulse-stone {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.95); }
+            50% { opacity: 0.8; transform: scale(0.95); }
         }
 
         /* Buttons */
@@ -291,8 +336,10 @@ class OnboardingFlow extends LitElement {
         /* Dot indicators */
         .dots {
             display: flex;
+            justify-content: center;
+            width: 100%;
             gap: 0.5rem;
-            margin-top: 2rem;
+            padding: 1.5rem 0;
         }
 
         .dot {
@@ -437,28 +484,8 @@ class OnboardingFlow extends LitElement {
         eventBus.emit(Events.ONBOARDING_COMPLETE);
     }
 
-    renderStoneIcon(size = 120) {
-        return html`
-            <svg viewBox="0 0 192 192" width="${size}" height="${size}">
-                <defs>
-                    <radialGradient id="stoneGrad" cx="35%" cy="35%" r="65%">
-                        <stop offset="0%" stop-color="#ff6a2a"/>
-                        <stop offset="40%" stop-color="#FF4D00"/>
-                        <stop offset="70%" stop-color="#cc3d00"/>
-                        <stop offset="100%" stop-color="#802600"/>
-                    </radialGradient>
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                        <feMerge>
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
-                <ellipse cx="96" cy="100" rx="58" ry="52" fill="url(#stoneGrad)" filter="url(#glow)" transform="rotate(-8 96 100)"/>
-                <ellipse cx="78" cy="82" rx="18" ry="12" fill="rgba(255,255,255,0.15)" transform="rotate(-20 78 82)"/>
-            </svg>
-        `;
+    renderStone(sizeClass = '') {
+        return html`<div class="stone ${sizeClass}"></div>`;
     }
 
     renderScreen1() {
@@ -481,8 +508,8 @@ class OnboardingFlow extends LitElement {
                     `)}
                 </div>
 
-                <div class="stone-icon">
-                    ${this.renderStoneIcon()}
+                <div class="stone-container">
+                    ${this.renderStone()}
                 </div>
 
                 <h1>${t('onboarding.welcome.title')}</h1>
@@ -524,7 +551,7 @@ class OnboardingFlow extends LitElement {
 
                 <div class="warning-box">
                     <div class="icon">
-                        ${this.renderStoneIcon(20)}
+                        ${this.renderStone('mini')}
                         <span class="label">${t('onboarding.privacy.warningLabel')}</span>
                     </div>
                     <p class="text">${t('onboarding.privacy.warningText')}</p>
@@ -580,7 +607,7 @@ class OnboardingFlow extends LitElement {
                 <div class="screen">
                     <div class="scan-container">
                         <div class="scan-stone">
-                            ${this.renderStoneIcon(80)}
+                            ${this.renderStone()}
                         </div>
                     </div>
                     <h1>${t('nfc.notSupported')}</h1>
@@ -596,7 +623,7 @@ class OnboardingFlow extends LitElement {
                     <div class="ring ${this.isScanning ? 'active' : ''}"></div>
                     <div class="ring ${this.isScanning ? 'active' : ''}"></div>
                     <div class="scan-stone ${this.isScanning ? 'scanning' : ''}">
-                        ${this.renderStoneIcon(80)}
+                        ${this.renderStone()}
                     </div>
                 </div>
 

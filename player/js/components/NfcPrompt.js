@@ -63,19 +63,38 @@ class NfcPrompt extends LitElement {
             z-index: 1;
         }
 
-        .nfc-icon svg {
+        .stone {
             width: 100%;
             height: 100%;
-            filter: drop-shadow(0 0 20px rgba(255, 77, 0, 0.5));
+            background: linear-gradient(
+                135deg,
+                #FF4D00 0%,
+                #cc3d00 40%,
+                #993000 70%,
+                #662000 100%
+            );
+            border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+            box-shadow:
+                inset -8px -8px 20px rgba(0, 0, 0, 0.4),
+                inset 4px 4px 10px rgba(255, 255, 255, 0.15),
+                0 10px 20px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(255, 77, 0, 0.4);
+            animation: float 4s ease-in-out infinite;
         }
 
-        .nfc-icon.scanning svg {
-            animation: pulse 2s ease-in-out infinite;
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-6px) rotate(2deg); }
+            75% { transform: translateY(-3px) rotate(-2deg); }
+        }
+
+        .nfc-icon.scanning .stone {
+            animation: float 4s ease-in-out infinite, pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.95); }
+            50% { opacity: 0.8; transform: scale(0.95); }
         }
 
         h2 {
@@ -238,37 +257,13 @@ class NfcPrompt extends LitElement {
         `;
     }
 
-    renderStoneIcon() {
-        return html`
-            <svg viewBox="0 0 192 192">
-                <defs>
-                    <radialGradient id="stoneGradNfc" cx="35%" cy="35%" r="65%">
-                        <stop offset="0%" stop-color="#ff6a2a"/>
-                        <stop offset="40%" stop-color="#FF4D00"/>
-                        <stop offset="70%" stop-color="#cc3d00"/>
-                        <stop offset="100%" stop-color="#802600"/>
-                    </radialGradient>
-                    <filter id="glowNfc">
-                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                        <feMerge>
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
-                <ellipse cx="96" cy="100" rx="58" ry="52" fill="url(#stoneGradNfc)" filter="url(#glowNfc)" transform="rotate(-8 96 100)"/>
-                <ellipse cx="78" cy="82" rx="18" ry="12" fill="rgba(255,255,255,0.15)" transform="rotate(-20 78 82)"/>
-            </svg>
-        `;
-    }
-
     renderScanning() {
         return html`
             <div class="scan-container">
                 <div class="ring active"></div>
                 <div class="ring active"></div>
                 <div class="ring active"></div>
-                <div class="nfc-icon scanning">${this.renderStoneIcon()}</div>
+                <div class="nfc-icon scanning"><div class="stone"></div></div>
             </div>
             <h2>${t('nfc.scanning')}</h2>
             <p class="subtitle">${t('nfc.holdClose')}</p>
@@ -281,7 +276,7 @@ class NfcPrompt extends LitElement {
                 <div class="ring"></div>
                 <div class="ring"></div>
                 <div class="ring"></div>
-                <div class="nfc-icon">${this.renderStoneIcon()}</div>
+                <div class="nfc-icon"><div class="stone"></div></div>
             </div>
             <h2>${t('nfc.ready')}</h2>
             <p class="subtitle">${t('nfc.tapToActivate')}</p>
