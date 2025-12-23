@@ -89,5 +89,38 @@
         "clearData": "清除已保存的消息",
         "clearConfirm": "确定吗？这将删除所有已保存的消息。",
         "dataCleared": "数据已清除"
+    },
+    "onboarding": {
+        "welcome": {
+            "title": "你发现了一颗非常特别的石头",
+            "text": "这颗小石头里藏着只属于你的加密语音消息。你想发现它里面有什么吗？"
+        },
+        "discover": "探索",
+        "privacy": {
+            "title": "隐私优先设计",
+            "noServers": "无外部服务器",
+            "noTracking": "无追踪或分析",
+            "encrypted": "仅在你的设备上解密",
+            "warningLabel": "你的石头是唯一的钥匙",
+            "warningText": "如果丢失，其内容将无法恢复——即使是我们也无能为力。"
+        },
+        "understand": "我明白了",
+        "device": {
+            "title": "自然承载的记忆",
+            "subtitle": "这颗石头里的声音只为你而守护。",
+            "question": "这是我的个人设备",
+            "yes": "是",
+            "no": "否",
+            "textGuest": "声音将播放一次，不留痕迹。随时再次扫描你的石头即可重新聆听。",
+            "textPersonal": "声音将安全保存在你的设备上。随时收听，离线也可以。"
+        },
+        "continue": "继续",
+        "decrypt": {
+            "title": "准备聆听",
+            "text": "将你的石头靠近设备，开始解密消息。",
+            "button": "解密消息",
+            "scanning": "解密中...",
+            "holdClose": "将你的石头靠近设备"
+        }
     }
 }

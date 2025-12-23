@@ -89,5 +89,38 @@
         "clearData": "Borrar mensajes guardados",
         "clearConfirm": "¿Estás seguro? Esto eliminará todos los mensajes guardados.",
         "dataCleared": "Datos borrados"
+    },
+    "onboarding": {
+        "welcome": {
+            "title": "Has encontrado una piedra muy especial",
+            "text": "Esta pequeña piedra contiene mensajes de audio encriptados destinados solo a tus oídos. ¿Te gustaría descubrir lo que contiene?"
+        },
+        "discover": "Descubrir",
+        "privacy": {
+            "title": "Privacidad por diseño",
+            "noServers": "Sin servidores externos",
+            "noTracking": "Sin rastreo ni análisis",
+            "encrypted": "Descifrado solo en tu dispositivo",
+            "warningLabel": "Tu piedra es la única llave",
+            "warningText": "Si se pierde, su contenido no puede recuperarse — ni siquiera por nosotros."
+        },
+        "understand": "Entiendo",
+        "device": {
+            "title": "Recuerdos llevados por la naturaleza",
+            "subtitle": "Las voces dentro de esta piedra están protegidas solo para ti.",
+            "question": "Este es mi dispositivo personal",
+            "yes": "Sí",
+            "no": "No",
+            "textGuest": "Las voces se reproducirán una vez, sin dejar rastro. Escanea tu piedra nuevamente cuando quieras escuchar de nuevo.",
+            "textPersonal": "Las voces se guardarán de forma segura en tu dispositivo. Escucha cuando quieras, incluso sin conexión."
+        },
+        "continue": "Continuar",
+        "decrypt": {
+            "title": "Listo para escuchar",
+            "text": "Acerca tu piedra para comenzar a descifrar sus mensajes.",
+            "button": "Descifrar mensajes",
+            "scanning": "Descifrando...",
+            "holdClose": "Acerca tu piedra a tu dispositivo"
+        }
     }
 }

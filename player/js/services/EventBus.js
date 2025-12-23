@@ -118,5 +118,8 @@ export const Events = {
     PLAYER_SHEET_COLLAPSE: 'player:sheetCollapse',
 
     // Tag detection
-    TAG_DETECTED: 'app:tagDetected'
+    TAG_DETECTED: 'app:tagDetected',
+
+    // Onboarding
+    ONBOARDING_COMPLETE: 'app:onboardingComplete'
 };

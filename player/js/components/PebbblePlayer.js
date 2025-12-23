@@ -17,6 +17,7 @@ import { dateLock } from '../services/DateLockService.js';
 import { nfc } from '../services/NFCService.js';
 
 const Screen = {
+    ONBOARDING: 'onboarding',
     HOME: 'home',
     WELCOME: 'welcome',
     DEVICE_MODE: 'device_mode',
@@ -221,7 +222,24 @@ class PebbblePlayer extends LitElement {
         super.connectedCallback();
         console.log('🎮 PebbblePlayer connected (Android NFC version)');
         this.setupEventListeners();
-        // Always start at HOME - library view with FAB for NFC
+
+        // Check if first-time user needs onboarding
+        const hasOnboarded = localStorage.getItem('pebbble-onboarded');
+        const hasPlaylists = await this.checkForExistingPlaylists();
+
+        if (!hasOnboarded && !hasPlaylists) {
+            console.log('🆕 First-time user - showing onboarding');
+            this.screen = Screen.ONBOARDING;
+        }
+    }
+
+    async checkForExistingPlaylists() {
+        try {
+            const playlists = await storage.getAllPlaylists();
+            return playlists && playlists.length > 0;
+        } catch (e) {
+            return false;
+        }
     }
 
     disconnectedCallback() {
@@ -258,6 +276,12 @@ class PebbblePlayer extends LitElement {
         }
 
         this.nfcData = { serial, playlistHash, url };
+
+        // If we're in onboarding, let the onboarding flow handle the rest
+        if (this.screen === Screen.ONBOARDING) {
+            console.log('📱 NFC read during onboarding - flow continues there');
+            return;
+        }
 
         const remembered = localStorage.getItem('pebbble-device-mode');
         const cached = await storage.getPlaylist(playlistHash);
@@ -311,6 +335,20 @@ class PebbblePlayer extends LitElement {
         this.unsubscribers.push(
             eventBus.on(Events.OFFLINE_PLAYLIST_SELECT, (data) => {
                 this.handleOfflinePlaylistSelect(data);
+            })
+        );
+
+        // Onboarding complete - NFC was scanned during onboarding
+        this.unsubscribers.push(
+            eventBus.on(Events.ONBOARDING_COMPLETE, () => {
+                console.log('✅ Onboarding complete');
+                // nfcData was already set by NFC_TAG_READ handler
+                if (this.nfcData) {
+                    this.loadPlaylist();
+                } else {
+                    // No tag scanned yet, go to home
+                    this.screen = Screen.HOME;
+                }
             })
         );
     }
@@ -557,6 +595,10 @@ class PebbblePlayer extends LitElement {
 
         return html`
             <div class="container">
+                <div class="screen ${this.screen === Screen.ONBOARDING ? 'active' : ''}">
+                    <onboarding-flow></onboarding-flow>
+                </div>
+
                 <div class="screen ${this.screen === Screen.HOME ? 'active' : ''}">
                     <home-screen></home-screen>
                 </div>

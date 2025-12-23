@@ -58,11 +58,18 @@ class NfcPrompt extends LitElement {
         }
 
         .nfc-icon {
-            font-size: 4rem;
+            width: 80px;
+            height: 80px;
             z-index: 1;
         }
 
-        .nfc-icon.scanning {
+        .nfc-icon svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(255, 77, 0, 0.5));
+        }
+
+        .nfc-icon.scanning svg {
             animation: pulse 2s ease-in-out infinite;
         }
 
@@ -231,13 +238,37 @@ class NfcPrompt extends LitElement {
         `;
     }
 
+    renderStoneIcon() {
+        return html`
+            <svg viewBox="0 0 192 192">
+                <defs>
+                    <radialGradient id="stoneGradNfc" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stop-color="#ff6a2a"/>
+                        <stop offset="40%" stop-color="#FF4D00"/>
+                        <stop offset="70%" stop-color="#cc3d00"/>
+                        <stop offset="100%" stop-color="#802600"/>
+                    </radialGradient>
+                    <filter id="glowNfc">
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <ellipse cx="96" cy="100" rx="58" ry="52" fill="url(#stoneGradNfc)" filter="url(#glowNfc)" transform="rotate(-8 96 100)"/>
+                <ellipse cx="78" cy="82" rx="18" ry="12" fill="rgba(255,255,255,0.15)" transform="rotate(-20 78 82)"/>
+            </svg>
+        `;
+    }
+
     renderScanning() {
         return html`
             <div class="scan-container">
                 <div class="ring active"></div>
                 <div class="ring active"></div>
                 <div class="ring active"></div>
-                <span class="nfc-icon scanning">📡</span>
+                <div class="nfc-icon scanning">${this.renderStoneIcon()}</div>
             </div>
             <h2>${t('nfc.scanning')}</h2>
             <p class="subtitle">${t('nfc.holdClose')}</p>
@@ -250,14 +281,13 @@ class NfcPrompt extends LitElement {
                 <div class="ring"></div>
                 <div class="ring"></div>
                 <div class="ring"></div>
-                <span class="nfc-icon">📡</span>
+                <div class="nfc-icon">${this.renderStoneIcon()}</div>
             </div>
             <h2>${t('nfc.ready')}</h2>
             <p class="subtitle">${t('nfc.tapToActivate')}</p>
             <button
                 @click=${this.activateNfc}
                 ?disabled=${this.isButtonDisabled}>
-                <span>📡</span>
                 ${this.buttonText}
             </button>
             ${this.error ? html`

@@ -89,5 +89,38 @@
         "clearData": "Supprimer les messages sauvegardés",
         "clearConfirm": "Êtes-vous sûr ? Cela supprimera tous les messages sauvegardés.",
         "dataCleared": "Données supprimées"
+    },
+    "onboarding": {
+        "welcome": {
+            "title": "Tu as trouvé une pierre très spéciale",
+            "text": "Ce petit caillou contient des messages audio cryptés destinés uniquement à tes oreilles. Veux-tu découvrir ce qu'il contient ?"
+        },
+        "discover": "Découvrir",
+        "privacy": {
+            "title": "Confidentialité par conception",
+            "noServers": "Aucun serveur externe",
+            "noTracking": "Aucun suivi ni analyse",
+            "encrypted": "Décrypté uniquement sur ton appareil",
+            "warningLabel": "Ta pierre est la seule clé",
+            "warningText": "En cas de perte, son contenu ne peut être récupéré — même pas par nous."
+        },
+        "understand": "J'ai compris",
+        "device": {
+            "title": "Des souvenirs portés par la nature",
+            "subtitle": "Les voix dans cette pierre sont protégées pour toi seul.",
+            "question": "Ceci est mon appareil personnel",
+            "yes": "Oui",
+            "no": "Non",
+            "textGuest": "Les voix joueront une seule fois, sans laisser de trace. Scanne à nouveau ta pierre pour les réécouter.",
+            "textPersonal": "Les voix seront sauvegardées en toute sécurité sur ton appareil. Écoute quand tu veux, même hors ligne."
+        },
+        "continue": "Continuer",
+        "decrypt": {
+            "title": "Prêt à écouter",
+            "text": "Approche ta pierre pour commencer à décrypter ses messages.",
+            "button": "Décrypter les messages",
+            "scanning": "Décryptage...",
+            "holdClose": "Approche ta pierre de ton appareil"
+        }
     }
 }

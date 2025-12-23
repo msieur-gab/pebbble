@@ -17,6 +17,7 @@ import './components/PebbblePlayer.js';
 import './components/HomeScreen.js';
 import './components/NfcPrompt.js';
 import './components/SettingsPanel.js';
+import './components/OnboardingFlow.js';
 import './components/MagicStoneWelcome.js';
 import './components/DeviceModeSelector.js';
 import './components/PlaylistView.js';

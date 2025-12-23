@@ -3,7 +3,7 @@
  * Caches app shell for offline use
  */
 
-const CACHE_NAME = 'pebbble-v40-nfc';
+const CACHE_NAME = 'pebbble-v41-onboarding';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -29,6 +29,7 @@ const STATIC_ASSETS = [
     './js/components/SettingsPanel.js',
     './js/components/PlayerSheet.js',
     './js/components/MiniPlayer.js',
+    './js/components/OnboardingFlow.js',
     './js/components/MagicStoneWelcome.js',
     './js/components/DeviceModeSelector.js',
     './js/components/PlaylistView.js',

@@ -89,5 +89,38 @@
         "clearData": "Clear saved messages",
         "clearConfirm": "Are you sure? This will remove all saved messages.",
         "dataCleared": "All data cleared"
+    },
+    "onboarding": {
+        "welcome": {
+            "title": "You have found a very special stone",
+            "text": "This little pebble contains encrypted audio messages intended only for your ears. Would you like to discover what it contains?"
+        },
+        "discover": "Discover",
+        "privacy": {
+            "title": "Privacy by design",
+            "noServers": "No external servers",
+            "noTracking": "No tracking or analytics",
+            "encrypted": "Decrypted only on your device",
+            "warningLabel": "Your stone is the only key",
+            "warningText": "If lost, its contents cannot be recovered — not even by us."
+        },
+        "understand": "I understand",
+        "device": {
+            "title": "Memories carried by nature",
+            "subtitle": "The voices within this stone are protected for you alone.",
+            "question": "This is my personal device",
+            "yes": "Yes",
+            "no": "No",
+            "textGuest": "The voices will play once, leaving no trace. Scan your stone again anytime to listen once more.",
+            "textPersonal": "The voices will be securely saved on your device. Listen anytime, even offline."
+        },
+        "continue": "Continue",
+        "decrypt": {
+            "title": "Ready to listen",
+            "text": "Hold your stone close to begin decrypting its messages.",
+            "button": "Decrypt messages",
+            "scanning": "Decrypting...",
+            "holdClose": "Hold your stone close to your device"
+        }
     }
 }
