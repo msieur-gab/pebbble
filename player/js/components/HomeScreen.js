@@ -394,9 +394,10 @@ class HomeScreen extends LitElement {
         );
 
         this.unsubscribers.push(
-            eventBus.on(Events.PLAYLIST_LOADED, () => {
+            eventBus.on(Events.PLAYLIST_LOADED, async () => {
                 this.pendingTag = null;
                 this.isNfcScanning = false;
+                await this.checkUserStatus();
             })
         );
 
