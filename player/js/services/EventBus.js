@@ -104,6 +104,7 @@ export const Events = {
     OFFLINE_PLAYLIST_SELECT: 'storage:offlinePlaylistSelect',
 
     // i18n events
+    I18N_READY: 'i18n:ready',
     LANGUAGE_CHANGE: 'i18n:languageChange',
 
     // UI events

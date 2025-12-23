@@ -32,7 +32,8 @@ class PebbblePlayer extends LitElement {
         nfcData: { state: true },
         playlist: { state: true },
         error: { state: true },
-        loadingMessage: { state: true }
+        loadingMessage: { state: true },
+        i18nReady: { state: true }
     };
 
     static styles = css`
@@ -215,6 +216,7 @@ class PebbblePlayer extends LitElement {
         this.error = null;
         this.loadingMessage = '';
         this.isLoading = false;
+        this.i18nReady = false;
         this.unsubscribers = [];
     }
 
@@ -223,6 +225,15 @@ class PebbblePlayer extends LitElement {
         console.log('🎮 PebbblePlayer connected (Android NFC version)');
         this.setupEventListeners();
 
+        // Check if i18n is already ready (might have loaded before component)
+        const { i18n } = await import('../services/I18nService.js');
+        if (i18n.isReady) {
+            this.i18nReady = true;
+            await this.initializeScreen();
+        }
+    }
+
+    async initializeScreen() {
         // Check if first-time user needs onboarding
         const hasOnboarded = localStorage.getItem('pebbble-onboarded');
         const hasPlaylists = await this.checkForExistingPlaylists();
@@ -307,6 +318,15 @@ class PebbblePlayer extends LitElement {
     }
 
     setupEventListeners() {
+        // Wait for i18n to be ready before showing content
+        this.unsubscribers.push(
+            eventBus.on(Events.I18N_READY, async () => {
+                console.log('🌐 i18n ready');
+                this.i18nReady = true;
+                await this.initializeScreen();
+            })
+        );
+
         // NFC tag read - the main entry point for new playlists
         this.unsubscribers.push(
             eventBus.on(Events.NFC_TAG_READ, (data) => {
@@ -590,7 +610,22 @@ class PebbblePlayer extends LitElement {
         `;
     }
 
+    renderInitialLoading() {
+        return html`
+            <div class="container">
+                <div class="loading-screen">
+                    <div class="loading-stone"></div>
+                </div>
+            </div>
+        `;
+    }
+
     render() {
+        // Wait for i18n before showing any content
+        if (!this.i18nReady) {
+            return this.renderInitialLoading();
+        }
+
         console.log('🎮 Rendering screen:', this.screen);
 
         return html`

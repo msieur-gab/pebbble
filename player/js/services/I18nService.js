@@ -64,6 +64,7 @@ class I18nService {
 
             // Notify listeners
             eventBus.emit(Events.LANGUAGE_CHANGE, { language: lang });
+            eventBus.emit(Events.I18N_READY);
 
         } catch (error) {
             console.error('I18nService: Failed to load translations', error);
