@@ -8,6 +8,7 @@ import { LitElement, html, css } from 'lit';
 import { eventBus, Events } from '../services/EventBus.js';
 import { t } from '../services/I18nService.js';
 import { nfc } from '../services/NFCService.js';
+import { audio } from '../services/AudioService.js';
 
 class NfcPrompt extends LitElement {
     static properties = {
@@ -239,6 +240,8 @@ class NfcPrompt extends LitElement {
         this.error = null;
 
         try {
+            // Unlock audio in direct user gesture context for autoplay
+            await audio.unlock();
             await nfc.startReader();
         } catch (error) {
             // Error handling done via event bus

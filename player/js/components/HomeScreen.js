@@ -430,6 +430,8 @@ class HomeScreen extends LitElement {
         if (this.isNfcScanning) return;
 
         try {
+            // Unlock audio in direct user gesture context for autoplay
+            await audio.unlock();
             await nfc.startReader();
         } catch (error) {
             // Error handled via event bus

@@ -490,6 +490,8 @@ class OnboardingFlow extends LitElement {
 
     async activateNfc() {
         try {
+            // Unlock audio in direct user gesture context for autoplay
+            await audio.unlock();
             await storage.setDeviceMode(this.isPersonalDevice ? 'personal' : 'shared');
             await nfc.startReader();
         } catch (error) {
