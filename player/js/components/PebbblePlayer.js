@@ -487,6 +487,12 @@ class PebbblePlayer extends LitElement {
     async loadFromNetwork() {
         const manifest = await ipfs.downloadPlaylist(this.nfcData.playlistHash);
 
+        // Save playlist metadata immediately so OfflineLibrary can find it
+        // when PLAYLIST_LOADED fires (before audio processing completes)
+        if (storage.isAvailable()) {
+            await storage.savePlaylist(this.nfcData.playlistHash, this.nfcData.serial, manifest);
+        }
+
         this.loadingMessage = t('storage.decrypting');
 
         const tracks = [];
@@ -553,10 +559,6 @@ class PebbblePlayer extends LitElement {
             } catch (error) {
                 console.error('Failed to process message:', message.messageId, error);
             }
-        }
-
-        if (storage.isAvailable()) {
-            await storage.savePlaylist(this.nfcData.playlistHash, this.nfcData.serial, manifest);
         }
     }
 
