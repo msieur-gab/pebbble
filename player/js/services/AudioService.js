@@ -160,6 +160,12 @@ class AudioService {
      */
     updatePlaylist(tracks) {
         this.playlist = tracks;
+
+        // Notify UI to update playlist display
+        eventBus.emit(Events.PLAYLIST_LOADED, {
+            tracks,
+            count: tracks.length
+        });
     }
 
     /**
