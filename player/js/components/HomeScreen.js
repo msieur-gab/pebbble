@@ -398,7 +398,7 @@ class HomeScreen extends LitElement {
                 this.pendingTag = null;
                 this.isNfcScanning = false;
                 this.isFirstTimeUser = false;
-                this.render();
+                this.requestUpdate();
             })
         );
 
