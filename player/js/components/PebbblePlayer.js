@@ -551,8 +551,9 @@ class PebbblePlayer extends LitElement {
                         await audio.play();
                     }
                 } else {
+                    // Just update the playlist without interrupting playback
                     const availableTracks = tracks.filter(t => t.lockInfo.status === 'unlocked');
-                    await audio.loadPlaylist(availableTracks);
+                    audio.updatePlaylist(availableTracks);
                     this.playlist = [...tracks];
                 }
 

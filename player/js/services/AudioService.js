@@ -154,6 +154,15 @@ class AudioService {
     }
 
     /**
+     * Update playlist without interrupting current playback
+     * Used when additional tracks are added while playing
+     * @param {Array} tracks - Updated array of tracks
+     */
+    updatePlaylist(tracks) {
+        this.playlist = tracks;
+    }
+
+    /**
      * Load a specific track by index
      * @param {number} index
      * @returns {Promise} Resolves when audio is ready to play
