@@ -88,7 +88,6 @@ export const Events = {
     SEEK: 'player:seek',
     TIME_UPDATE: 'player:timeUpdate',
     ENDED: 'player:ended',
-    AUTOPLAY_BLOCKED: 'player:autoplayBlocked',
 
     // Playback mode events
     REPEAT_MODE_CHANGE: 'player:repeatModeChange',
